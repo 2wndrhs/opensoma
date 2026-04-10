@@ -49,7 +49,7 @@ export function RoomFilters({ date, room }: RoomFiltersProps) {
 
   return (
     <form
-      className="grid gap-4 rounded-lg border border-border bg-surface p-4 shadow-sm md:grid-cols-[1fr_1fr_auto] md:items-end"
+      className="grid gap-4 rounded-lg border border-border bg-surface p-4 md:grid-cols-[1fr_1fr_auto]"
       onSubmit={handleSubmit}
     >
       <Field name="date">
@@ -71,7 +71,7 @@ export function RoomFilters({ date, room }: RoomFiltersProps) {
           </SelectPopup>
         </Select>
       </Field>
-      <div className="flex gap-2">
+      <div className="flex gap-2 pt-[26px]">
         <Button type="submit">조회</Button>
         <Button type="button" variant="ghost" onClick={handleReset}>
           초기화

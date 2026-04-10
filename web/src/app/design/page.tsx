@@ -2,8 +2,9 @@
 
 import * as React from 'react'
 
-import { Monitor, Moon, Sun } from '@phosphor-icons/react'
+import { ChalkboardTeacher, Monitor, Moon, Sun } from '@phosphor-icons/react'
 
+import { Breadcrumb } from '~/components/breadcrumb'
 import { useTheme } from '~/lib/theme'
 import { Badge } from '~/ui/badge'
 import { Button } from '~/ui/button'
@@ -31,7 +32,7 @@ function ColorSwatch({ name, variable }: { name: string; variable: string }) {
   return (
     <div className="flex flex-col gap-2">
       <div
-        className="h-12 w-12 rounded-md border border-border shadow-sm"
+        className="h-12 w-12 rounded-lg border border-border"
         style={{ backgroundColor: `var(${variable})` }}
       />
       <div className="flex flex-col">
@@ -58,7 +59,7 @@ export default function DesignSystemPage() {
               <button
                 key={t}
                 onClick={() => setTheme(t)}
-                className={`rounded-md px-3 py-1 text-sm transition-colors cursor-pointer ${
+                className={`rounded-lg px-3 py-1 text-sm transition-colors cursor-pointer ${
                   theme === t ? 'bg-surface text-foreground shadow-sm' : 'text-foreground-muted hover:text-foreground'
                 }`}
               >
@@ -154,6 +155,9 @@ export default function DesignSystemPage() {
 
       <Section title="Buttons">
         <div className="space-y-6">
+          <p className="text-sm text-foreground-muted">
+            All buttons include an <code className="rounded bg-muted px-1.5 py-0.5 text-xs">active:scale-[0.98]</code> press effect for tactile feedback.
+          </p>
           <div className="flex flex-wrap items-center gap-4">
             <Button variant="primary" size="md">
               Primary
@@ -213,7 +217,7 @@ export default function DesignSystemPage() {
       </Section>
 
       <Section title="Tables">
-        <div className="overflow-hidden rounded-md border border-border">
+        <div className="overflow-hidden rounded-lg border border-border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -306,6 +310,91 @@ export default function DesignSystemPage() {
             <p className="mb-4 text-sm text-foreground-muted">위아래 콘텐츠를 구분하는 구분선입니다.</p>
             <Separator />
             <p className="mt-4 text-sm text-foreground-muted">구분선 아래 콘텐츠입니다.</p>
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Shadow Elevation">
+        <div className="grid gap-6 md:grid-cols-3">
+          <div className="rounded-lg bg-surface p-6 shadow-[var(--shadow-elevation-1)]">
+            <p className="text-sm font-medium">Elevation 1</p>
+            <p className="text-xs text-foreground-muted">Cards at rest</p>
+          </div>
+          <div className="rounded-lg bg-surface p-6 shadow-[var(--shadow-elevation-2)]">
+            <p className="text-sm font-medium">Elevation 2</p>
+            <p className="text-xs text-foreground-muted">Hover / raised</p>
+          </div>
+          <div className="rounded-lg bg-surface p-6 shadow-[var(--shadow-elevation-3)]">
+            <p className="text-sm font-medium">Elevation 3</p>
+            <p className="text-xs text-foreground-muted">Overlays / dropdowns</p>
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Interactive Card">
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <h3 className="text-lg font-semibold">Static Card</h3>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-foreground-muted">No hover effect</p>
+            </CardContent>
+          </Card>
+          <Card interactive>
+            <CardHeader>
+              <h3 className="text-lg font-semibold">Interactive Card</h3>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-foreground-muted">Hover to see lift + shadow</p>
+            </CardContent>
+          </Card>
+        </div>
+      </Section>
+
+      <Section title="Empty States">
+        <div className="grid gap-6 md:grid-cols-2">
+          <EmptyState message="데이터가 없습니다." />
+          <EmptyState message="멘토링 세션이 없습니다." icon={ChalkboardTeacher} />
+        </div>
+      </Section>
+
+      <Section title="Breadcrumb">
+        <Breadcrumb
+          items={[
+            { label: '멘토링 / 특강 게시판', href: '/mentoring' },
+            { label: '제목 예시' },
+          ]}
+        />
+      </Section>
+
+      <Section title="Slot Colors">
+        <div className="flex flex-wrap gap-3">
+          <div className="flex items-center gap-2 rounded-lg border border-slot-selected-border bg-slot-selected px-3 py-2 text-sm text-slot-selected-foreground">
+            Selected
+          </div>
+          <div className="flex items-center gap-2 rounded-lg border border-slot-available-border bg-slot-available px-3 py-2 text-sm text-slot-available-foreground">
+            Available
+          </div>
+          <div className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground-muted">
+            Unavailable
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Transitions">
+        <div className="grid gap-3 md:grid-cols-3">
+          <div className="rounded-lg border border-border bg-surface p-4">
+            <p className="text-sm font-medium">Fast</p>
+            <p className="text-xs text-foreground-muted">150ms — color, opacity</p>
+          </div>
+          <div className="rounded-lg border border-border bg-surface p-4">
+            <p className="text-sm font-medium">Normal</p>
+            <p className="text-xs text-foreground-muted">200ms — transform</p>
+          </div>
+          <div className="rounded-lg border border-border bg-surface p-4">
+            <p className="text-sm font-medium">Slow</p>
+            <p className="text-xs text-foreground-muted">300ms — layout shifts</p>
           </div>
         </div>
       </Section>

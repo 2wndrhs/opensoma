@@ -6,7 +6,7 @@ export default async function MemberPage() {
   const member = await client.member.show()
 
   return (
-    <Card className="border border-border">
+    <Card>
       <CardHeader>
         <div className="space-y-1">
           <h1 className="text-2xl font-bold text-foreground">회원정보</h1>
@@ -30,7 +30,7 @@ export default async function MemberPage() {
 
 function MemberItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md bg-muted p-4">
+    <div className="rounded-lg bg-muted p-4">
       <dt className="text-sm text-foreground-muted">{label}</dt>
       <dd className="mt-1 text-sm font-medium text-foreground">{value}</dd>
     </div>

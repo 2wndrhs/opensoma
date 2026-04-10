@@ -1,5 +1,6 @@
 'use client'
 
+import { CalendarBlank } from '@phosphor-icons/react'
 import { useState } from 'react'
 
 import { ReserveForm } from '~/app/(main)/room/components/reserve-form'
@@ -20,7 +21,7 @@ export function RoomCardList({ rooms, date }: RoomCardListProps) {
     return (
       <Card className="border border-border">
         <CardContent>
-          <EmptyState message="조회 조건에 맞는 회의실이 없습니다." />
+          <EmptyState icon={CalendarBlank} message="조회 조건에 맞는 회의실이 없습니다." />
         </CardContent>
       </Card>
     )

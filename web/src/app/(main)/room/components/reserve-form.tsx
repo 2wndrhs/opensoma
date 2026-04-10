@@ -21,7 +21,7 @@ export function ReserveForm({ roomId, roomName, date, selectedSlots }: ReserveFo
   const [state, formAction, isPending] = useActionState(reserveRoom, initialState)
 
   return (
-    <form action={formAction} className="space-y-4 rounded-md border border-border bg-background p-4">
+    <form action={formAction} className="space-y-4 rounded-lg bg-background p-4 shadow-[var(--shadow-elevation-1)]">
       <input name="roomId" type="hidden" value={String(roomId)} />
       <input name="date" type="hidden" value={date} />
       <input name="slots" type="hidden" value={selectedSlots.join(',')} />

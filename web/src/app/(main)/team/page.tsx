@@ -17,7 +17,7 @@ export default async function TeamPage() {
 
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {teamInfo.teams.map((team) => (
-          <Card key={`${team.name}-${team.joinStatus}`} className="border border-border">
+          <Card key={`${team.name}-${team.joinStatus}`}>
             <CardHeader>
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
