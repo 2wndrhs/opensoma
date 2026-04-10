@@ -2,14 +2,13 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
+import { Checkbox } from '~/ui/checkbox'
 import { ToggleGroup, ToggleGroupItem } from '~/ui/toggle-group'
-
-const MINE = 'mine'
 
 const typeFilters = [
   { label: '전체', value: '', color: 'bg-foreground-muted' },
   { label: '멘토특강', value: 'lecture', color: 'bg-amber-500' },
-  { label: '자유멘토링', value: 'free', color: 'bg-emerald-500' },
+  { label: '자유멘토링', value: 'public', color: 'bg-emerald-500' },
 ]
 
 export function MentoringFilters() {
@@ -20,24 +19,34 @@ export function MentoringFilters() {
   const currentType = searchParams.get('type') ?? ''
   const isMine = searchParams.get('search') === 'author:@me'
 
-  const statusValue = isMine ? MINE : currentStatus
-
-  const handleStatusChange = (value: string) => {
-    if (value === MINE) {
-      updateSearchParams({ pathname, router, searchParams, updates: { search: 'author:@me', page: '' } })
-    } else {
-      updateSearchParams({ pathname, router, searchParams, updates: { status: value, search: '', page: '' } })
-    }
-  }
-
   return (
     <div className="flex flex-wrap items-center justify-between gap-4">
-      <ToggleGroup value={statusValue} onValueChange={handleStatusChange}>
-        <ToggleGroupItem value="">전체</ToggleGroupItem>
-        <ToggleGroupItem value="open">접수중</ToggleGroupItem>
-        <ToggleGroupItem value="closed">마감</ToggleGroupItem>
-        <ToggleGroupItem value={MINE}>MY 멘토링</ToggleGroupItem>
-      </ToggleGroup>
+      <div className="flex items-center gap-4">
+        <ToggleGroup
+          value={currentStatus}
+          onValueChange={(value) =>
+            updateSearchParams({ pathname, router, searchParams, updates: { status: value, page: '' } })
+          }
+        >
+          <ToggleGroupItem value="">전체</ToggleGroupItem>
+          <ToggleGroupItem value="open">접수중</ToggleGroupItem>
+          <ToggleGroupItem value="closed">마감</ToggleGroupItem>
+        </ToggleGroup>
+
+        <Checkbox
+          checked={isMine}
+          onCheckedChange={(checked) =>
+            updateSearchParams({
+              pathname,
+              router,
+              searchParams,
+              updates: { search: checked ? 'author:@me' : '', page: '' },
+            })
+          }
+        >
+          MY 멘토링
+        </Checkbox>
+      </div>
 
       <div className="flex items-center gap-4">
         {typeFilters.map((item) => (
