@@ -1,8 +1,11 @@
 import { execSync } from 'node:child_process'
 import { createDecipheriv, pbkdf2Sync } from 'node:crypto'
 import { copyFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
+
+const require = createRequire(import.meta.url)
 
 const COOKIE_QUERY =
   "SELECT encrypted_value, value FROM cookies WHERE host_key LIKE '%swmaestro.ai' AND name = 'JSESSIONID' ORDER BY last_access_utc DESC LIMIT 1"

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, test } from 'bun:test'
+import { execSync } from 'node:child_process'
 import { createCipheriv, pbkdf2Sync } from 'node:crypto'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { mkdtemp } from 'node:fs/promises'
@@ -75,6 +76,28 @@ describe('TokenExtractor', () => {
     const extractor = new TokenExtractor('linux', home)
     expect(await extractor.extract()).toEqual({ sessionCookie: 'decrypted-session' })
   })
+
+  test('extracts plaintext cookie under Node.js (compiled ESM)', async () => {
+    execSync('bun run build', { cwd: join(import.meta.dir, '..'), stdio: 'pipe' })
+    const home = await makeTempDir()
+    const dbPath = join(home, '.config', 'google-chrome', 'Default', 'Cookies')
+    createCookieDbWithPlaintext(dbPath, 'node-test-session')
+
+    const result = runNodeExtractor(home)
+
+    expect(JSON.parse(result.trim())).toEqual({ sessionCookie: 'node-test-session' })
+  })
+
+  test('extracts encrypted cookie under Node.js (compiled ESM)', async () => {
+    execSync('bun run build', { cwd: join(import.meta.dir, '..'), stdio: 'pipe' })
+    const home = await makeTempDir()
+    const dbPath = join(home, '.config', 'google-chrome', 'Default', 'Cookies')
+    createCookieDbWithEncrypted(dbPath, encryptLinuxCookie('node-encrypted-session'))
+
+    const result = runNodeExtractor(home)
+
+    expect(JSON.parse(result.trim())).toEqual({ sessionCookie: 'node-encrypted-session' })
+  })
 })
 
 async function makeTempDir(): Promise<string> {
@@ -110,6 +133,21 @@ function createCookieDbWithEncrypted(filePath: string, encrypted: Buffer): void 
     encrypted,
   ])
   db.close()
+}
+
+function runNodeExtractor(home: string): string {
+  const projectRoot = join(import.meta.dir, '..')
+  const scriptPath = join(home, 'test-node-extract.mjs')
+  writeFileSync(
+    scriptPath,
+    [
+      `import { TokenExtractor } from ${JSON.stringify(join(projectRoot, 'dist', 'src', 'token-extractor.js'))};`,
+      `const ext = new TokenExtractor('linux', ${JSON.stringify(home)});`,
+      `const result = await ext.extract();`,
+      `console.log(JSON.stringify(result));`,
+    ].join('\n'),
+  )
+  return execSync(`node ${scriptPath}`, { encoding: 'utf-8', timeout: 15_000 })
 }
 
 function encryptLinuxCookie(value: string): Buffer {
