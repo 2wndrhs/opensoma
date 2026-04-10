@@ -36,7 +36,8 @@
     "lint:fix": "oxlint --fix",
     "format": "oxfmt --write .",
     "prepublishOnly": "bun run build && bun scripts/prepublish.ts",
-    "postpublish": "git checkout package.json"
+    "postpublish": "git checkout package.json",
+    "dev:web": "cd web && bun run dev"
   },
   "dependencies": {
     "better-sqlite3": "latest",
