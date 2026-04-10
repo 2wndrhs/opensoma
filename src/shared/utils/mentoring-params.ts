@@ -2,7 +2,7 @@ import { MENU_NO, REPORT_CD } from '@/constants'
 import type { UserIdentity } from '@/http'
 
 const STATUS_MAP: Record<string, string> = { open: 'A', closed: 'C' }
-const TYPE_MAP: Record<string, string> = { free: REPORT_CD.FREE_MENTORING, lecture: REPORT_CD.MENTOR_LECTURE }
+const TYPE_MAP: Record<string, string> = { public: REPORT_CD.PUBLIC_MENTORING, lecture: REPORT_CD.MENTOR_LECTURE }
 const SEARCH_FIELD_MAP: Record<string, string> = { title: '1', author: '2', content: '3' }
 
 export interface MentoringSearchQuery {

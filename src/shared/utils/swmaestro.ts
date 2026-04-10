@@ -3,13 +3,13 @@ import { parse } from 'node-html-parser'
 import { MENU_NO, REPORT_CD, ROOM_IDS, TIME_SLOTS } from '@/constants'
 import { ApplicationHistoryItemSchema, type ApplicationHistoryItem } from '@/types'
 
-export function toReportCd(type: 'free' | 'lecture'): string {
-  return type === 'lecture' ? REPORT_CD.MENTOR_LECTURE : REPORT_CD.FREE_MENTORING
+export function toReportCd(type: 'public' | 'lecture'): string {
+  return type === 'lecture' ? REPORT_CD.MENTOR_LECTURE : REPORT_CD.PUBLIC_MENTORING
 }
 
 export function buildMentoringPayload(params: {
   title: string
-  type: 'free' | 'lecture'
+  type: 'public' | 'lecture'
   date: string
   startTime: string
   endTime: string

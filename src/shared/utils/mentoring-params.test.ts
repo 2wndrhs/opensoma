@@ -47,10 +47,10 @@ describe('buildMentoringListParams', () => {
     })
   })
 
-  test('type maps free and lecture to report codes', () => {
-    expect(buildMentoringListParams({ type: 'free' })).toEqual({
+  test('type maps public and lecture to report codes', () => {
+    expect(buildMentoringListParams({ type: 'public' })).toEqual({
       menuNo: MENU_NO.MENTORING,
-      searchGubunMentolec: REPORT_CD.FREE_MENTORING,
+      searchGubunMentolec: REPORT_CD.PUBLIC_MENTORING,
     })
     expect(buildMentoringListParams({ type: 'lecture' })).toEqual({
       menuNo: MENU_NO.MENTORING,

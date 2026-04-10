@@ -63,7 +63,7 @@ opensoma dashboard show
 ```bash
 # 목록 조회
 opensoma mentoring list
-opensoma mentoring list --status open --type free --page 2
+opensoma mentoring list --status open --type public --page 2
 
 # 검색
 opensoma mentoring list --search "OpenCode"
@@ -76,7 +76,7 @@ opensoma mentoring get <id>
 # 멘토링 생성
 opensoma mentoring create \
   --title "멘토링 제목" \
-  --type free \
+  --type public \
   --date 2025-01-15 \
   --start 14:00 \
   --end 16:00 \
@@ -170,7 +170,7 @@ const detail = await client.mentoring.get(123)
 // 멘토링 생성
 await client.mentoring.create({
   title: '멘토링 제목',
-  type: 'free',
+  type: 'public',
   date: '2025-01-15',
   startTime: '14:00',
   endTime: '16:00',

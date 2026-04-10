@@ -47,7 +47,7 @@ export class SomaClient {
     get(id: number): Promise<MentoringDetail>
     create(params: {
       title: string
-      type: 'free' | 'lecture'
+      type: 'public' | 'lecture'
       date: string
       startTime: string
       endTime: string

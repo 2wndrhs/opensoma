@@ -37,7 +37,7 @@ To effectively use opensoma, you must understand the following core concepts tha
   - **스페이스 A7**: 23 (Capacity: 4)
   - **스페이스 A8**: 24 (Capacity: 4)
 - **Mentoring Session Types**:
-  - **자유 멘토링 (Free Mentoring)**: These are typically smaller, more intimate sessions focused on specific technical hurdles, project feedback, or career advice. They often have a limited number of attendees and are highly interactive.
+  - **자유 멘토링 (Public Mentoring)**: These are typically smaller, more intimate sessions focused on specific technical hurdles, project feedback, or career advice. They often have a limited number of attendees and are highly interactive. Any mentee can apply.
   - **멘토 특강 (Mentor Lecture)**: These are larger-scale educational events or seminars led by mentors. They are designed for a broader audience and may be held in larger seminar rooms or conducted online.
 
 ### Quick Start
@@ -126,7 +126,7 @@ To operate efficiently and provide a personalized experience, you should maintai
 ## Preferences
 - Always use --pretty for output
 - Default reservation title: "멘토링 세션"
-- Preferred mentoring type: 자유 멘토링
+- Preferred mentoring type: public (자유 멘토링)
 ```
 
 ### Commands
@@ -158,7 +158,7 @@ Comprehensive management of mentoring sessions, from discovery to application.
 ```bash
 # List mentoring sessions with optional filters
 # --status: open (접수중), closed (마감)
-# --type: free (자유 멘토링), lecture (멘토 특강)
+# --type: public (자유 멘토링), lecture (멘토 특강)
 # --search: Search by title (default), author, or content
 #   "keyword"         → title search
 #   "title:keyword"   → title search (explicit)
@@ -166,7 +166,7 @@ Comprehensive management of mentoring sessions, from discovery to application.
 #   "author:@me"      → my sessions only
 #   "content:keyword" → content search
 # --page: Navigate through results (default: 1)
-opensoma mentoring list [--status <open|closed>] [--type <free|lecture>] [--search <query>] [--page <n>] [--pretty]
+opensoma mentoring list [--status <open|closed>] [--type <public|lecture>] [--search <query>] [--page <n>] [--pretty]
 
 # Retrieve full details for a specific mentoring session
 # Includes content (HTML), venue, and attendee counts
@@ -174,7 +174,7 @@ opensoma mentoring get <id> [--pretty]
 
 # Create a new mentoring session (Available for Mentors only)
 # --title: The name of the session
-# --type: free or lecture
+# --type: public or lecture
 # --date: YYYY-MM-DD
 # --start: HH:MM (24-hour format)
 # --end: HH:MM (24-hour format)
@@ -183,7 +183,7 @@ opensoma mentoring get <id> [--pretty]
 # --reg-start: Registration start date (YYYY-MM-DD)
 # --reg-end: Registration end date (YYYY-MM-DD)
 # --content: Detailed description in HTML format
-opensoma mentoring create --title <title> --type <free|lecture> --date <YYYY-MM-DD> --start <HH:MM> --end <HH:MM> --venue <venue> [--max-attendees <n>] [--reg-start <YYYY-MM-DD>] [--reg-end <YYYY-MM-DD>] [--content <html>] [--pretty]
+opensoma mentoring create --title <title> --type <public|lecture> --date <YYYY-MM-DD> --start <HH:MM> --end <HH:MM> --venue <venue> [--max-attendees <n>] [--reg-start <YYYY-MM-DD>] [--reg-end <YYYY-MM-DD>] [--content <html>] [--pretty]
 
 # Delete a mentoring session you created
 opensoma mentoring delete <id> [--pretty]

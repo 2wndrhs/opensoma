@@ -48,7 +48,7 @@ export const VENUES = {
 } as const
 
 export const REPORT_CD = {
-  FREE_MENTORING: 'MRC010',
+  PUBLIC_MENTORING: 'MRC010',
   MENTOR_LECTURE: 'MRC020',
   REGULAR_MENTORING: 'MRC990',
 } as const

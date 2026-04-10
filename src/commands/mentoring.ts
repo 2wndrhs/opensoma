@@ -18,7 +18,7 @@ type ListOptions = { status?: string; type?: string; search?: string; page?: str
 type GetOptions = { pretty?: boolean }
 type CreateOptions = {
   title: string
-  type: 'free' | 'lecture'
+  type: 'public' | 'lecture'
   date: string
   start: string
   end: string
@@ -149,7 +149,7 @@ export const mentoringCommand = new Command('mentoring')
     new Command('list')
       .description('List mentoring sessions')
       .option('--status <status>', 'Status filter (open|closed)')
-      .option('--type <type>', 'Type filter (free|lecture)')
+      .option('--type <type>', 'Type filter (public|lecture)')
       .option('--search <query>', 'Search (e.g. "keyword", "author:@me", "content:text")')
       .option('--page <n>', 'Page number')
       .option('--pretty', 'Pretty print JSON output')
@@ -166,7 +166,7 @@ export const mentoringCommand = new Command('mentoring')
     new Command('create')
       .description('Create a mentoring session')
       .requiredOption('--title <title>', 'Title')
-      .requiredOption('--type <type>', 'Mentoring type (free|lecture)')
+      .requiredOption('--type <type>', 'Mentoring type (public|lecture)')
       .requiredOption('--date <date>', 'Session date')
       .requiredOption('--start <time>', 'Start time')
       .requiredOption('--end <time>', 'End time')

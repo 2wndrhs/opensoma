@@ -27,7 +27,7 @@ describe('SomaClient', () => {
       },
     })
 
-    const result = await client.mentoring.list({ status: 'open', type: 'free', page: 2 })
+    const result = await client.mentoring.list({ status: 'open', type: 'public', page: 2 })
 
     expect(calls).toEqual([
       {
