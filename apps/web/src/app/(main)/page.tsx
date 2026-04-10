@@ -125,7 +125,7 @@ function TeamInfoCard({
 function MentoringCard({
   items,
 }: {
-  items: Array<{ title: string; url: string; status: string }>
+  items: Array<{ title: string; url: string; status: string; date?: string; time?: string }>
 }) {
   return (
     <Card>
@@ -145,37 +145,36 @@ function MentoringCard({
           <EmptyState icon={ChalkboardTeacher} message="등록한 멘토링/특강이 없습니다." className="border-0 py-8" />
         ) : (
           <div className="space-y-3">
-            {items.map((item) => {
-              const parsed = parseMentoringInfo(item.title)
-              return (
-                <div
-                  key={`${item.url}-${item.title}`}
-                  className="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-4 transition-colors hover:bg-muted/50"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
+            {items.map((item) => (
+              <div
+                key={`${item.url}-${item.title}`}
+                className="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-4 transition-colors hover:bg-muted/50"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    {item.date ? (
                       <div className="flex items-center gap-1.5 text-sm font-medium text-primary">
                         <CalendarBlank size={14} />
-                        <span>{parsed.date || '날짜 미정'}</span>
+                        <span>{item.date}</span>
                       </div>
-                      {parsed.time && (
-                        <div className="flex items-center gap-1.5 text-sm text-foreground-muted">
-                          <Clock size={14} />
-                          <span>{parsed.time}</span>
-                        </div>
-                      )}
-                    </div>
-                    <StatusBadge status={item.status} />
+                    ) : null}
+                    {item.time ? (
+                      <div className="flex items-center gap-1.5 text-sm text-foreground-muted">
+                        <Clock size={14} />
+                        <span>{item.time}</span>
+                      </div>
+                    ) : null}
                   </div>
-                  <Link
-                    href={toInternalHref(item.url)}
-                    className="font-medium text-foreground hover:text-primary"
-                  >
-                    {parsed.title || item.title}
-                  </Link>
+                  <StatusBadge status={item.status} />
                 </div>
-              )
-            })}
+                <Link
+                  href={toInternalHref(item.url)}
+                  className="font-medium text-foreground hover:text-primary"
+                >
+                  {item.title}
+                </Link>
+              </div>
+            ))}
           </div>
         )}
       </CardContent>
@@ -186,7 +185,7 @@ function MentoringCard({
 function RoomReservationCard({
   items,
 }: {
-  items: Array<{ title: string; url: string; status: string }>
+  items: Array<{ title: string; url: string; status: string; date?: string; time?: string }>
 }) {
   return (
     <Card>
@@ -206,83 +205,43 @@ function RoomReservationCard({
           <EmptyState icon={CalendarBlank} message="예약한 회의실이 없습니다." className="border-0 py-8" />
         ) : (
           <div className="space-y-3">
-            {items.map((item) => {
-              const parsed = parseRoomInfo(item.title)
-              return (
-                <div
-                  key={`${item.url}-${item.title}`}
-                  className="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-4 transition-colors hover:bg-muted/50"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
+            {items.map((item) => (
+              <div
+                key={`${item.url}-${item.title}`}
+                className="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-4 transition-colors hover:bg-muted/50"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    {item.date ? (
                       <div className="flex items-center gap-1.5 text-sm font-medium text-primary">
                         <CalendarBlank size={14} />
-                        <span>{parsed.date || '날짜 미정'}</span>
+                        <span>{item.date}</span>
                       </div>
-                      {parsed.time && (
-                        <div className="flex items-center gap-1.5 text-sm text-foreground-muted">
-                          <Clock size={14} />
-                          <span>{parsed.time}</span>
-                        </div>
-                      )}
-                    </div>
-                    <Badge variant={item.status.includes('완료') ? 'success' : 'primary'}>
-                      {item.status}
-                    </Badge>
+                    ) : null}
+                    {item.time ? (
+                      <div className="flex items-center gap-1.5 text-sm text-foreground-muted">
+                        <Clock size={14} />
+                        <span>{item.time}</span>
+                      </div>
+                    ) : null}
                   </div>
-                  <div className="flex items-center justify-between">
-                    <Link
-                      href={toInternalHref(item.url)}
-                      className="font-medium text-foreground hover:text-primary"
-                    >
-                      {parsed.roomName}
-                    </Link>
-                    {parsed.purpose && (
-                      <span className="text-sm text-foreground-muted">{parsed.purpose}</span>
-                    )}
-                  </div>
+                  <Badge variant={item.status.includes('완료') ? 'success' : 'primary'}>
+                    {item.status}
+                  </Badge>
                 </div>
-              )
-            })}
+                <Link
+                  href={toInternalHref(item.url)}
+                  className="font-medium text-foreground hover:text-primary"
+                >
+                  {item.title}
+                </Link>
+              </div>
+            ))}
           </div>
         )}
       </CardContent>
     </Card>
   )
-}
-
-function parseMentoringInfo(title: string) {
-  const dateMatch = title.match(/(\d{4}[.-]\d{1,2}[.-]\d{1,2})/)
-  const timeMatch = title.match(/(\d{1,2}:\d{2})/g)
-  const cleanTitle = title
-    .replace(/^\[.*?\]\s*/, '')
-    .replace(/[（(].*?[）)]/g, '')
-    .replace(/\[.*?\]/g, '')
-    .replace(/【.*?】/g, '')
-    .replace(/\d{4}[.-]\d{1,2}[.-]\d{1,2}/g, '')
-    .replace(/\d{1,2}:\d{2}/g, '')
-    .replace(/[-–—]\s*/g, '')
-    .trim()
-
-  return {
-    title: cleanTitle || title,
-    date: dateMatch ? dateMatch[1].replace(/\./g, '-') : null,
-    time: timeMatch && timeMatch.length >= 2 ? `${timeMatch[0]} ~ ${timeMatch[timeMatch.length - 1]}` : timeMatch ? timeMatch[0] : null,
-  }
-}
-
-function parseRoomInfo(title: string) {
-  const roomMatch = title.match(/스페이스\s*([A-Z]\d+)/i)
-  const dateMatch = title.match(/(\d{4}-\d{2}-\d{2})/)
-  const timeMatch = title.match(/(\d{2}:\d{2})/g)
-  const purposeMatch = title.match(/[:-]\s*(.+)$/) || title.match(/」\s*(.+)$/)
-
-  return {
-    roomName: roomMatch ? `스페이스 ${roomMatch[1]}` : title,
-    date: dateMatch ? dateMatch[1] : null,
-    time: timeMatch && timeMatch.length >= 2 ? `${timeMatch[0]} ~ ${timeMatch[timeMatch.length - 1]}` : timeMatch ? timeMatch[0] : null,
-    purpose: purposeMatch ? purposeMatch[1].trim() : null,
-  }
 }
 
 function toInternalHref(url: string) {

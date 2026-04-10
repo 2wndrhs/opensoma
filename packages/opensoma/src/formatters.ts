@@ -345,16 +345,19 @@ function extractGroupMap(root: HTMLElement): LabelMap {
 function parseDashboardLinks(
   root: HTMLElement,
   predicate: (href: string) => boolean,
-): Array<{ title: string; url: string; status: string }> {
+): Array<{ title: string; url: string; status: string; date?: string; time?: string }> {
   return root
     .querySelectorAll("ul.bbs-dash_w a")
     .filter((link) => predicate(link.getAttribute("href") ?? ""))
     .map((link) => {
       const text = cleanText(link);
+      const { cleanTitle, date, time } = extractDateTimeFromTitle(text);
       return {
-        title: stripTrailingStatus(text),
+        title: stripTrailingStatus(cleanTitle),
         url: link.getAttribute("href") ?? "",
         status: extractTrailingStatus(text),
+        date,
+        time,
       };
     });
 }
@@ -481,6 +484,32 @@ function extractJoinStatus(card: HTMLElement): string {
 function extractTrailingStatus(text: string): string {
   const match = text.match(/(예약완료|예약중|대기|접수중|마감|승인완료|신청완료)$/);
   return match?.[1] ?? "";
+}
+
+function extractDateTimeFromTitle(text: string): { cleanTitle: string; date?: string; time?: string } {
+  // Match date patterns: 2025-04-15 or 2025.04.15
+  const dateMatch = text.match(/(\d{4}[.-]\d{2}[.-]\d{2})/);
+  // Match time patterns: 14:00~16:00 or 14:00
+  const timeMatch = text.match(/(\d{2}:\d{2}(?:~\d{2}:\d{2})?)/);
+
+  let cleanTitle = text;
+  let date: string | undefined;
+  let time: string | undefined;
+
+  if (dateMatch) {
+    date = dateMatch[1].replace(/\./g, "-");
+    cleanTitle = cleanTitle.replace(dateMatch[0], "");
+  }
+
+  if (timeMatch) {
+    time = timeMatch[1];
+    cleanTitle = cleanTitle.replace(timeMatch[0], "");
+  }
+
+  // Clean up remaining whitespace and punctuation
+  cleanTitle = cleanTitle.replace(/^[\s\-~]+|[\s\-~]+$/g, "").trim();
+
+  return { cleanTitle, date, time };
 }
 
 function stripTrailingStatus(text: string): string {
