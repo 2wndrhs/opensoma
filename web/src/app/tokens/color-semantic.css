@@ -1,0 +1,38 @@
+@theme {
+  --color-background: var(--color-gray-50);
+  --color-foreground: var(--color-gray-900);
+  --color-foreground-muted: var(--color-gray-500);
+
+  --color-surface: #ffffff;
+  --color-surface-hover: var(--color-gray-50);
+  --color-muted: var(--color-gray-100);
+
+  --color-border: var(--color-gray-200);
+  --color-border-muted: var(--color-gray-100);
+  --color-ring: var(--color-blue-600);
+
+  --color-primary: var(--color-blue-600);
+  --color-primary-hover: var(--color-blue-700);
+  --color-primary-light: var(--color-blue-50);
+  --color-primary-foreground: #ffffff;
+
+  --color-secondary: var(--color-gray-100);
+  --color-secondary-hover: var(--color-gray-200);
+  --color-secondary-foreground: var(--color-gray-700);
+
+  --color-success: var(--color-green-500);
+  --color-success-muted: var(--color-green-50);
+  --color-success-foreground: var(--color-green-700);
+
+  --color-danger: var(--color-red-500);
+  --color-danger-muted: var(--color-red-50);
+  --color-danger-foreground: var(--color-red-700);
+
+  --color-warning: var(--color-yellow-500);
+  --color-warning-muted: var(--color-yellow-50);
+  --color-warning-foreground: var(--color-yellow-700);
+
+  --color-info: var(--color-blue-500);
+  --color-info-muted: var(--color-blue-50);
+  --color-info-foreground: var(--color-blue-700);
+}
