@@ -42,7 +42,7 @@ export default async function MentoringDetailPage({ params }: PageProps) {
 
   return (
     <div className="space-y-4">
-      <Breadcrumb items={[{ label: '멘토링 / 특강 게시판', href: '/mentoring' }, { label: mentoring.title }]} />
+      <Breadcrumb items={[{ label: '멘토링/특강', href: '/mentoring' }, { label: mentoring.title }]} />
       <Card>
         <CardHeader>
           <div className="space-y-4">

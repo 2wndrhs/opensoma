@@ -13,7 +13,7 @@ import { EmptyState } from '@/ui/empty-state'
 import { ResponsiveTable } from '@/ui/responsive-table'
 
 export const metadata: Metadata = {
-  title: '멘토링 / 특강 게시판',
+  title: '멘토링/특강',
 }
 
 export default async function MentoringPage({
@@ -34,7 +34,7 @@ export default async function MentoringPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-foreground">멘토링 / 특강 게시판</h1>
+          <h1 className="text-2xl font-bold text-foreground">멘토링/특강</h1>
           <p className="text-sm text-foreground-muted">모집 중인 멘토링과 특강을 확인하고 새 글을 등록하세요.</p>
         </div>
         <div className="flex gap-2">

@@ -369,7 +369,7 @@ export default function DesignSystemPage() {
       </Section>
 
       <Section title="Breadcrumb">
-        <Breadcrumb items={[{ label: '멘토링 / 특강 게시판', href: '/mentoring' }, { label: '제목 예시' }]} />
+        <Breadcrumb items={[{ label: '멘토링/특강', href: '/mentoring' }, { label: '제목 예시' }]} />
       </Section>
 
       <Section title="Slot Colors">
