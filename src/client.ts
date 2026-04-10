@@ -1,7 +1,8 @@
 import { MENU_NO } from '@/constants'
 import { CredentialManager } from '@/credential-manager'
 import * as formatters from '@/formatters'
-import { SomaHttp } from '@/http'
+import { type UserIdentity, SomaHttp } from '@/http'
+import { buildMentoringListParams } from '@/shared/utils/mentoring-params'
 import {
   buildApplicationPayload,
   buildCancelApplicationPayload,
@@ -103,11 +104,16 @@ export class SomaClient {
 
     this.mentoring = {
       list: async (options) => {
-        const params: Record<string, string> = { menuNo: MENU_NO.MENTORING }
-        if (options?.status) params.searchStatMentolec = options.status
-        if (options?.type) params.searchGubunMentolec = options.type
-        if (options?.page) params.pageIndex = String(options.page)
-        const html = await this.http.get('/mypage/mentoLec/list.do', params)
+        const user = options?.status === 'my' ? await this.resolveUser() : undefined
+        const html = await this.http.get(
+          '/mypage/mentoLec/list.do',
+          buildMentoringListParams({
+            status: options?.status,
+            type: options?.type,
+            page: options?.page,
+            user,
+          }),
+        )
         return { items: formatters.parseMentoringList(html), pagination: formatters.parsePagination(html) }
       },
       get: async (id) =>
@@ -159,8 +165,18 @@ export class SomaClient {
     }
 
     this.dashboard = {
-      get: async () =>
-        formatters.parseDashboard(await this.http.get('/mypage/myMain/dashboard.do', { menuNo: MENU_NO.DASHBOARD })),
+      get: async () => {
+        const [dashboard, { items: myMentoring }] = await Promise.all([
+          formatters.parseDashboard(await this.http.get('/mypage/myMain/dashboard.do', { menuNo: MENU_NO.DASHBOARD })),
+          this.mentoring.list({ status: 'my' }),
+        ])
+        dashboard.mentoringSessions = myMentoring.map((item) => ({
+          title: item.title,
+          url: `/mypage/mentoLec/view.do?qustnrSn=${item.id}`,
+          status: item.status,
+        }))
+        return dashboard
+      },
     }
 
     this.notice = {
@@ -208,6 +224,11 @@ export class SomaClient {
     }
   }
 
+  private async resolveUser(): Promise<UserIdentity | undefined> {
+    const identity = await this.http.checkLogin()
+    return identity ?? undefined
+  }
+
   async login(username?: string, password?: string): Promise<void> {
     const resolvedUsername = username ?? this.options.username
     const resolvedPassword = password ?? this.options.password
@@ -219,8 +240,8 @@ export class SomaClient {
     await this.http.login(resolvedUsername, resolvedPassword)
   }
 
-  isLoggedIn(): Promise<boolean> {
-    return this.http.checkLogin()
+  async isLoggedIn(): Promise<boolean> {
+    return Boolean(await this.http.checkLogin())
   }
 
   async saveCredentials(manager = new CredentialManager()): Promise<void> {

@@ -11,6 +11,11 @@ interface CheckLoginResponse {
   userVO?: { userId?: string; userNm?: string; userSn?: number }
 }
 
+export interface UserIdentity {
+  userId: string
+  userNm: string
+}
+
 interface HeadersWithCookieHelpers extends Omit<Headers, 'getSetCookie'> {
   getSetCookie?: () => string[]
 }
@@ -82,7 +87,7 @@ export class SomaHttp {
     })
   }
 
-  async checkLogin(): Promise<boolean> {
+  async checkLogin(): Promise<UserIdentity | null> {
     const response = await fetch(this.buildUrl('/member/user/checkLogin.json'), {
       method: 'GET',
       headers: {
@@ -93,7 +98,9 @@ export class SomaHttp {
 
     this.updateFromResponse(response)
     const json = (await response.json()) as CheckLoginResponse
-    return Boolean(json.userVO?.userId)
+    const userId = json.userVO?.userId
+    if (!userId) return null
+    return { userId, userNm: json.userVO?.userNm ?? '' }
   }
 
   async logout(): Promise<void> {

@@ -95,7 +95,7 @@ describe('SomaHttp', () => {
     expect(http.getCsrfToken()).toBe('csrf-login')
   })
 
-  test('checkLogin returns true when userVO has userId', async () => {
+  test('checkLogin returns user identity when logged in, null otherwise', async () => {
     const loggedInMock = mock(async () =>
       createResponse(
         JSON.stringify({ resultCode: 'fail', userVO: { userId: 'user@example.com', userNm: 'Test' } }),
@@ -105,14 +105,14 @@ describe('SomaHttp', () => {
     )
     globalThis.fetch = loggedInMock as typeof fetch
 
-    await expect(new SomaHttp().checkLogin()).resolves.toBe(true)
+    await expect(new SomaHttp().checkLogin()).resolves.toEqual({ userId: 'user@example.com', userNm: 'Test' })
 
     const notLoggedInMock = mock(async () =>
       createResponse(JSON.stringify({ resultCode: 'fail', userVO: { userId: '', userSn: 0 } }), [], 'application/json'),
     )
     globalThis.fetch = notLoggedInMock as typeof fetch
 
-    await expect(new SomaHttp().checkLogin()).resolves.toBe(false)
+    await expect(new SomaHttp().checkLogin()).resolves.toBeNull()
   })
 
   test('logout calls logout endpoint', async () => {

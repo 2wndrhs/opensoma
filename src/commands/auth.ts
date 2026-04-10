@@ -61,7 +61,7 @@ async function statusAction(options: StatusOptions): Promise<void> {
     let valid = false
     try {
       const http = new SomaHttp({ sessionCookie: creds.sessionCookie, csrfToken: creds.csrfToken })
-      valid = await http.checkLogin()
+      valid = Boolean(await http.checkLogin())
     } catch {
       valid = false
     }
@@ -100,7 +100,7 @@ async function extractAction(options: ExtractOptions): Promise<void> {
     let valid = false
     let csrfToken: string | undefined
     try {
-      valid = await http.checkLogin()
+      valid = Boolean(await http.checkLogin())
       if (valid) {
         csrfToken = await http.extractCsrfToken()
       }

@@ -12,6 +12,7 @@ import {
 } from '@/shared/utils/swmaestro'
 
 import { getHttpOrExit } from './helpers'
+import { buildMentoringListParams } from '@/shared/utils/mentoring-params'
 
 type ListOptions = { status?: string; type?: string; page?: string; pretty?: boolean }
 type GetOptions = { pretty?: boolean }
@@ -34,12 +35,13 @@ type HistoryOptions = { page?: string; pretty?: boolean }
 async function listAction(options: ListOptions): Promise<void> {
   try {
     const http = await getHttpOrExit()
-    const html = await http.get('/mypage/mentoLec/list.do', {
-      menuNo: MENU_NO.MENTORING,
-      ...(options.status ? { searchStatMentolec: options.status } : {}),
-      ...(options.type ? { searchGubunMentolec: options.type } : {}),
-      ...(options.page ? { pageIndex: options.page } : {}),
-    })
+    const user = options.status === 'my' ? (await http.checkLogin()) ?? undefined : undefined
+    const html = await http.get('/mypage/mentoLec/list.do', buildMentoringListParams({
+      status: options.status,
+      type: options.type,
+      page: options.page,
+      user,
+    }))
     console.log(
       formatOutput(
         { items: formatters.parseMentoringList(html), pagination: formatters.parsePagination(html) },

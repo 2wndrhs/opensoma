@@ -6,14 +6,26 @@ import { handleError } from '@/shared/utils/error-handler'
 import { formatOutput } from '@/shared/utils/output'
 
 import { getHttpOrExit } from './helpers'
+import { buildMentoringListParams } from '@/shared/utils/mentoring-params'
 
 type ShowOptions = { pretty?: boolean }
 
 async function showAction(options: ShowOptions): Promise<void> {
   try {
     const http = await getHttpOrExit()
-    const html = await http.get('/mypage/myMain/dashboard.do', { menuNo: MENU_NO.DASHBOARD })
-    console.log(formatOutput(formatters.parseDashboard(html), options.pretty))
+    const user = (await http.checkLogin()) ?? undefined
+    const [dashboardHtml, mentoringHtml] = await Promise.all([
+      http.get('/mypage/myMain/dashboard.do', { menuNo: MENU_NO.DASHBOARD }),
+      http.get('/mypage/mentoLec/list.do', buildMentoringListParams({ status: 'my', user })),
+    ])
+    const dashboard = formatters.parseDashboard(dashboardHtml)
+    const myMentoring = formatters.parseMentoringList(mentoringHtml)
+    dashboard.mentoringSessions = myMentoring.map((item) => ({
+      title: item.title,
+      url: `/mypage/mentoLec/view.do?qustnrSn=${item.id}`,
+      status: item.status,
+    }))
+    console.log(formatOutput(dashboard, options.pretty))
   } catch (error) {
     handleError(error)
   }
