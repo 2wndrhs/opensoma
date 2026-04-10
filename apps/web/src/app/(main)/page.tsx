@@ -1,4 +1,4 @@
-import { Buildings, CalendarBlank, ChalkboardTeacher, Clock, MapPin, Users } from '@phosphor-icons/react/dist/ssr'
+import { Buildings, CalendarBlank, ChalkboardTeacher, Clock, Users } from '@phosphor-icons/react/dist/ssr'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -7,7 +7,6 @@ import { requireAuth } from '@/lib/auth'
 import { Badge } from '@/ui/badge'
 import { Card, CardContent, CardHeader } from '@/ui/card'
 import { EmptyState } from '@/ui/empty-state'
-import { ResponsiveTable } from '@/ui/responsive-table'
 
 export const metadata: Metadata = {
   title: '대시보드',
@@ -145,28 +144,39 @@ function MentoringCard({
         {items.length === 0 ? (
           <EmptyState icon={ChalkboardTeacher} message="등록한 멘토링/특강이 없습니다." className="border-0 py-8" />
         ) : (
-          <ResponsiveTable
-            items={items}
-            keyExtractor={(item) => `${item.url}-${item.title}`}
-            columns={[
-              {
-                header: '제목',
-                className: 'w-[60%]',
-                cell: (item) => (
+          <div className="space-y-3">
+            {items.map((item) => {
+              const parsed = parseMentoringInfo(item.title)
+              return (
+                <div
+                  key={`${item.url}-${item.title}`}
+                  className="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-4 transition-colors hover:bg-muted/50"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 text-sm font-medium text-primary">
+                        <CalendarBlank size={14} />
+                        <span>{parsed.date || '날짜 미정'}</span>
+                      </div>
+                      {parsed.time && (
+                        <div className="flex items-center gap-1.5 text-sm text-foreground-muted">
+                          <Clock size={14} />
+                          <span>{parsed.time}</span>
+                        </div>
+                      )}
+                    </div>
+                    <StatusBadge status={item.status} />
+                  </div>
                   <Link
                     href={toInternalHref(item.url)}
                     className="font-medium text-foreground hover:text-primary"
                   >
-                    {item.title}
+                    {parsed.title || item.title}
                   </Link>
-                ),
-              },
-              {
-                header: '상태',
-                cell: (item) => <StatusBadge status={item.status} />,
-              },
-            ]}
-          />
+                </div>
+              )
+            })}
+          </div>
         )}
       </CardContent>
     </Card>
@@ -204,34 +214,31 @@ function RoomReservationCard({
                   className="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-4 transition-colors hover:bg-muted/50"
                 >
                   <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 text-sm font-medium text-primary">
+                        <CalendarBlank size={14} />
+                        <span>{parsed.date || '날짜 미정'}</span>
+                      </div>
+                      {parsed.time && (
+                        <div className="flex items-center gap-1.5 text-sm text-foreground-muted">
+                          <Clock size={14} />
+                          <span>{parsed.time}</span>
+                        </div>
+                      )}
+                    </div>
+                    <Badge variant={item.status.includes('완료') ? 'success' : 'primary'}>
+                      {item.status}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
                     <Link
                       href={toInternalHref(item.url)}
                       className="font-medium text-foreground hover:text-primary"
                     >
                       {parsed.roomName}
                     </Link>
-                    <Badge variant={item.status.includes('완료') ? 'success' : 'primary'}>
-                      {item.status}
-                    </Badge>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-foreground-muted">
-                    {parsed.date && (
-                      <div className="flex items-center gap-1">
-                        <CalendarBlank size={14} />
-                        <span>{parsed.date}</span>
-                      </div>
-                    )}
-                    {parsed.time && (
-                      <div className="flex items-center gap-1">
-                        <Clock size={14} />
-                        <span>{parsed.time}</span>
-                      </div>
-                    )}
                     {parsed.purpose && (
-                      <div className="flex items-center gap-1">
-                        <MapPin size={14} />
-                        <span>{parsed.purpose}</span>
-                      </div>
+                      <span className="text-sm text-foreground-muted">{parsed.purpose}</span>
                     )}
                   </div>
                 </div>
@@ -242,6 +249,26 @@ function RoomReservationCard({
       </CardContent>
     </Card>
   )
+}
+
+function parseMentoringInfo(title: string) {
+  const dateMatch = title.match(/(\d{4}[.-]\d{1,2}[.-]\d{1,2})/)
+  const timeMatch = title.match(/(\d{1,2}:\d{2})/g)
+  const cleanTitle = title
+    .replace(/^\[.*?\]\s*/, '')
+    .replace(/[（(].*?[）)]/g, '')
+    .replace(/\[.*?\]/g, '')
+    .replace(/【.*?】/g, '')
+    .replace(/\d{4}[.-]\d{1,2}[.-]\d{1,2}/g, '')
+    .replace(/\d{1,2}:\d{2}/g, '')
+    .replace(/[-–—]\s*/g, '')
+    .trim()
+
+  return {
+    title: cleanTitle || title,
+    date: dateMatch ? dateMatch[1].replace(/\./g, '-') : null,
+    time: timeMatch && timeMatch.length >= 2 ? `${timeMatch[0]} ~ ${timeMatch[timeMatch.length - 1]}` : timeMatch ? timeMatch[0] : null,
+  }
 }
 
 function parseRoomInfo(title: string) {

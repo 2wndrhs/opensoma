@@ -13,11 +13,13 @@ export function Pagination({ pagination }: PaginationProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
+  const currentPage = Number(searchParams.get('page')) || 1
+
   if (pagination.totalPages <= 1) {
     return null
   }
 
-  const pages = getPages(pagination.currentPage, pagination.totalPages)
+  const pages = getPages(currentPage, pagination.totalPages)
 
   const createPageURL = (page: number) => {
     const params = new URLSearchParams(searchParams)
@@ -32,31 +34,27 @@ export function Pagination({ pagination }: PaginationProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4">
       <p className="text-sm text-foreground-muted">
-        총 {pagination.total}건 · {pagination.currentPage} / {pagination.totalPages} 페이지
+        총 {pagination.total}건 · {currentPage} / {pagination.totalPages} 페이지
       </p>
       <div className="flex flex-wrap items-center gap-2">
         <PageButton
-          href={createPageURL(Math.max(1, pagination.currentPage - 1))}
-          disabled={pagination.currentPage === 1}
+          href={createPageURL(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
         >
           이전
         </PageButton>
-        {pages.map((page) => {
-          const currentPageNum = Number(pagination.currentPage)
-          const isCurrent = page === currentPageNum
-          return (
-            <PageButton
-              key={`${page}-${currentPageNum}`}
-              href={createPageURL(page)}
-              isCurrent={isCurrent}
-            >
-              {page}
-            </PageButton>
-          )
-        })}
+        {pages.map((page) => (
+          <PageButton
+            key={page}
+            href={createPageURL(page)}
+            isCurrent={page === currentPage}
+          >
+            {page}
+          </PageButton>
+        ))}
         <PageButton
-          href={createPageURL(Math.min(pagination.totalPages, pagination.currentPage + 1))}
-          disabled={pagination.currentPage === pagination.totalPages}
+          href={createPageURL(Math.min(pagination.totalPages, currentPage + 1))}
+          disabled={currentPage === pagination.totalPages}
         >
           다음
         </PageButton>
