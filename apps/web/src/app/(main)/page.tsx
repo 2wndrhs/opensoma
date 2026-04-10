@@ -1,9 +1,10 @@
-import { Buildings, CalendarBlank, ChalkboardTeacher, Clock, Users } from '@phosphor-icons/react/dist/ssr'
+import { Buildings, CalendarBlank, ChalkboardTeacher, Clock, MapPin, Users } from '@phosphor-icons/react/dist/ssr'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { StatusBadge } from '@/components/status-badge'
 import { requireAuth } from '@/lib/auth'
+import { cn } from '@/lib/cn'
 import { Badge } from '@/ui/badge'
 import { Card, CardContent, CardHeader } from '@/ui/card'
 import { EmptyState } from '@/ui/empty-state'
@@ -125,8 +126,10 @@ function TeamInfoCard({
 function MentoringCard({
   items,
 }: {
-  items: Array<{ title: string; url: string; status: string; date?: string; time?: string }>
+  items: Array<{ title: string; url: string; status: string; date?: string; time?: string; timeEnd?: string; venue?: string }>
 }) {
+  const today = new Date().toISOString().slice(0, 10)
+
   return (
     <Card>
       <CardHeader>
@@ -145,36 +148,50 @@ function MentoringCard({
           <EmptyState icon={ChalkboardTeacher} message="등록한 멘토링/특강이 없습니다." className="border-0 py-8" />
         ) : (
           <div className="space-y-3">
-            {items.map((item) => (
-              <div
-                key={`${item.url}-${item.title}`}
-                className="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-4 transition-colors hover:bg-muted/50"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    {item.date ? (
-                      <div className="flex items-center gap-1.5 text-sm font-medium text-primary">
-                        <CalendarBlank size={14} />
-                        <span>{item.date}</span>
-                      </div>
-                    ) : null}
-                    {item.time ? (
-                      <div className="flex items-center gap-1.5 text-sm text-foreground-muted">
-                        <Clock size={14} />
-                        <span>{item.time}</span>
-                      </div>
-                    ) : null}
-                  </div>
-                  <StatusBadge status={item.status} />
-                </div>
-                <Link
-                  href={toInternalHref(item.url)}
-                  className="font-medium text-foreground hover:text-primary"
+            {items.map((item) => {
+              const isPast = item.date ? item.date < today : false
+              return (
+                <div
+                  key={`${item.url}-${item.title}`}
+                  className={cn(
+                    'flex flex-col gap-3 rounded-lg border p-4 transition-colors',
+                    isPast
+                      ? 'border-border-muted bg-muted/20 opacity-60'
+                      : 'border-border bg-muted/30 hover:bg-muted/50',
+                  )}
                 >
-                  {item.title}
-                </Link>
-              </div>
-            ))}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      {item.date ? (
+                        <div className={cn('flex items-center gap-1.5 text-sm font-medium', isPast ? 'text-foreground-muted' : 'text-primary')}>
+                          <CalendarBlank size={14} />
+                          <span>{item.date}</span>
+                        </div>
+                      ) : null}
+                      {item.time ? (
+                        <div className="flex items-center gap-1.5 text-sm text-foreground-muted">
+                          <Clock size={14} />
+                          <span>{item.timeEnd ? `${item.time} ~ ${item.timeEnd}` : item.time}</span>
+                        </div>
+                      ) : null}
+                      {item.venue ? (
+                        <div className="flex items-center gap-1.5 text-sm text-foreground-muted">
+                          <MapPin size={14} />
+                          <span>{item.venue}</span>
+                        </div>
+                      ) : null}
+                    </div>
+                    <StatusBadge status={item.status} />
+                  </div>
+                  <Link
+                    href={toInternalHref(item.url)}
+                    className={cn('font-medium hover:text-primary', isPast ? 'text-foreground-muted' : 'text-foreground')}
+                  >
+                    {item.title}
+                  </Link>
+                </div>
+              )
+            })}
           </div>
         )}
       </CardContent>
@@ -185,7 +202,7 @@ function MentoringCard({
 function RoomReservationCard({
   items,
 }: {
-  items: Array<{ title: string; url: string; status: string; date?: string; time?: string }>
+  items: Array<{ title: string; url: string; status: string }>
 }) {
   return (
     <Card>
@@ -204,40 +221,24 @@ function RoomReservationCard({
         {items.length === 0 ? (
           <EmptyState icon={CalendarBlank} message="예약한 회의실이 없습니다." className="border-0 py-8" />
         ) : (
-          <div className="space-y-3">
+          <ul className="space-y-3">
             {items.map((item) => (
-              <div
+              <li
                 key={`${item.url}-${item.title}`}
-                className="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-4 transition-colors hover:bg-muted/50"
+                className="flex items-center justify-between gap-4 rounded-lg bg-muted/50 p-4 transition-colors duration-150 hover:bg-surface-hover"
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    {item.date ? (
-                      <div className="flex items-center gap-1.5 text-sm font-medium text-primary">
-                        <CalendarBlank size={14} />
-                        <span>{item.date}</span>
-                      </div>
-                    ) : null}
-                    {item.time ? (
-                      <div className="flex items-center gap-1.5 text-sm text-foreground-muted">
-                        <Clock size={14} />
-                        <span>{item.time}</span>
-                      </div>
-                    ) : null}
-                  </div>
-                  <Badge variant={item.status.includes('완료') ? 'success' : 'primary'}>
-                    {item.status}
-                  </Badge>
-                </div>
                 <Link
                   href={toInternalHref(item.url)}
-                  className="font-medium text-foreground hover:text-primary"
+                  className="text-sm font-semibold text-foreground hover:text-primary"
                 >
                   {item.title}
                 </Link>
-              </div>
+                <Badge variant={item.status.includes('완료') ? 'success' : 'primary'}>
+                  {item.status}
+                </Badge>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </CardContent>
     </Card>
