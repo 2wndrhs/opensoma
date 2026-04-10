@@ -113,19 +113,19 @@ function getFirstValue(value: string | string[] | undefined) {
 }
 
 function TypeBadge({ type }: { type: string }) {
-  if (type === 'public') {
+  if (type === '자유 멘토링') {
     return (
       <div className="flex items-center gap-1.5">
         <span className="inline-block size-2 rounded-full bg-emerald-500" />
-        <span className="text-sm">자유멘토링</span>
+        <span className="text-sm">{type}</span>
       </div>
     )
   }
-  if (type === 'lecture') {
+  if (type === '멘토 특강') {
     return (
       <div className="flex items-center gap-1.5">
         <span className="inline-block size-2 rounded-full bg-amber-500" />
-        <span className="text-sm">멘토특강</span>
+        <span className="text-sm">{type}</span>
       </div>
     )
   }
