@@ -85,7 +85,7 @@ Example of a session expiration error:
 
 Example of a missing parameter error:
 ```json
-{"error":"Provide --username and --password or set SOMA_USERNAME and SOMA_PASSWORD"}
+{"error":"Provide --username and --password or set OPENSOMA_USERNAME and OPENSOMA_PASSWORD"}
 ```
 
 Example of a CSRF token error:

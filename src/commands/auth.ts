@@ -12,10 +12,10 @@ type ExtractOptions = { pretty?: boolean }
 
 async function loginAction(options: LoginOptions): Promise<void> {
   try {
-    const username = options.username ?? process.env.SOMA_USERNAME
-    const password = options.password ?? process.env.SOMA_PASSWORD
+    const username = options.username ?? process.env.OPENSOMA_USERNAME
+    const password = options.password ?? process.env.OPENSOMA_PASSWORD
     if (!username || !password) {
-      throw new Error('Provide --username and --password or set SOMA_USERNAME and SOMA_PASSWORD')
+      throw new Error('Provide --username and --password or set OPENSOMA_USERNAME and OPENSOMA_PASSWORD')
     }
 
     const http = new SomaHttp()

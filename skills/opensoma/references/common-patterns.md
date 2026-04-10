@@ -120,7 +120,7 @@ When a command fails, follow these patterns to resolve the issue. These steps wi
 - **Immediate Reservation**: For room reservations, check availability immediately before reserving. Slots can be taken quickly by other users, especially during peak times.
 - **Start with Dashboard**: Use `dashboard show` as the starting point for any task to get an overview of your current state and any pending actions.
 - **Check Role Restrictions**: Be aware of your role (Mentor or Mentee) and the operations available to you. The CLI will return an error if you attempt an unauthorized action.
-- **Use Environment Variables**: For security, use `SOMA_USERNAME` and `SOMA_PASSWORD` environment variables for authentication instead of passing them as flags.
+- **Use Environment Variables**: For security, use `OPENSOMA_USERNAME` and `OPENSOMA_PASSWORD` environment variables for authentication instead of passing them as flags.
 
 ## Anti-Patterns
 
