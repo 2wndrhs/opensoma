@@ -16,12 +16,12 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
-        <h1 className="mb-8 text-center text-3xl font-bold text-foreground">SW마에스트로</h1>
+        <h1 className="mb-8 text-center text-3xl font-bold text-foreground">오픈소마</h1>
         <Card className="shadow-[var(--shadow-elevation-2)]">
           <CardHeader>
             <div className="space-y-2 text-center">
               <h2 className="text-2xl font-bold text-foreground">로그인</h2>
-              <p className="text-sm text-foreground-muted">마이페이지 계정으로 로그인해주세요.</p>
+              <p className="text-sm text-foreground-muted">SW마에스트로 계정으로 로그인해주세요.</p>
             </div>
           </CardHeader>
           <CardContent>
