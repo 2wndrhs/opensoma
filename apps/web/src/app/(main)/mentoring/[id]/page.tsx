@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import React from 'react'
 
 import { Breadcrumb } from '@/components/breadcrumb'
 import { HtmlContent } from '@/components/html-content'
@@ -69,6 +70,19 @@ export default async function MentoringDetailPage({ params }: PageProps) {
             <MetaItem label="작성자" value={mentoring.author} />
             <MetaItem label="등록일" value={mentoring.createdAt} />
             <MetaItem label="개설 승인" value={mentoring.approved ? '승인완료' : '대기'} />
+            <MetaItem
+              label="원본 링크"
+              value={
+                <a
+                  href={`https://www.swmaestro.ai/sw/mypage/mentoLec/view.do?qustnrSn=${mentoring.id}&menuNo=200046`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  SWMaestro에서 보기 →
+                </a>
+              }
+            />
           </div>
           <Separator />
           <HtmlContent content={mentoring.content} />
@@ -78,7 +92,7 @@ export default async function MentoringDetailPage({ params }: PageProps) {
   )
 }
 
-function MetaItem({ label, value }: { label: string; value: string }) {
+function MetaItem({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="rounded-lg bg-muted p-4">
       <p className="text-sm text-foreground-muted">{label}</p>
