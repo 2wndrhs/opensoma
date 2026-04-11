@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "kill": "lsof -ti:3100 | xargs kill -9 2>/dev/null",
-    "dev": "bun run kill || true && bun --bun next dev --port 3100",
+    "kill": "lsof -ti:6933 | xargs kill -9 2>/dev/null",
+    "dev": "bun run kill || true && bun --bun next dev --port 6933",
     "build": "bun --bun next build",
     "start": "bun --bun next start",
     "typecheck": "tsc --noEmit",

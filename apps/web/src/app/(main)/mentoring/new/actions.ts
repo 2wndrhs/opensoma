@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import { venueToRoomId } from '@/app/(main)/room/lib/room-mentoring'
 import { performRoomReservation } from '@/lib/actions/reserve-room'
 import { createClient } from '@/lib/client'
-import type { RoomCard } from '@/lib/sdk'
+import { AuthenticationError, type RoomCard } from '@/lib/sdk'
 
 interface CreateMentoringState {
   error: string
@@ -49,6 +49,9 @@ export async function createMentoring(
       content: content || undefined,
     })
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      redirect('/login')
+    }
     return { error: error instanceof Error ? error.message : '멘토링 등록에 실패했습니다.' }
   }
 
@@ -74,13 +77,23 @@ export async function fetchRoomAvailability(
     const slots = await client.room.available(roomId, date)
     return { slots }
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      redirect('/login')
+    }
     return { error: error instanceof Error ? error.message : '회의실 정보를 불러오지 못했습니다.' }
   }
 }
 
 export async function fetchRooms(date: string, room?: string): Promise<RoomCard[]> {
-  const client = await createClient()
-  return client.room.list({ date, room: room || undefined })
+  try {
+    const client = await createClient()
+    return await client.room.list({ date, room: room || undefined })
+  } catch (error) {
+    if (error instanceof AuthenticationError) {
+      redirect('/login')
+    }
+    throw error
+  }
 }
 
 export async function reserveRoomFromMentoring(params: {

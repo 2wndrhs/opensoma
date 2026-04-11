@@ -1,6 +1,9 @@
 'use server'
 
+import { redirect } from 'next/navigation'
+
 import { createClient } from '@/lib/client'
+import { AuthenticationError } from '@/lib/sdk'
 
 interface ReserveRoomParams {
   roomId: number
@@ -34,6 +37,9 @@ export async function performRoomReservation(params: ReserveRoomParams): Promise
       notes,
     })
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      redirect('/login')
+    }
     return {
       error: error instanceof Error ? error.message : '회의실 예약에 실패했습니다.',
       success: '',
