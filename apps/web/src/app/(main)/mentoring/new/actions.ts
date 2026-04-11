@@ -34,6 +34,15 @@ export async function createMentoring(
     return { error: '종료 시간은 시작 시간보다 늦어야 합니다.' }
   }
 
+  const emojiRegex =
+    /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F018}-\u{1F270}]/u
+  if (emojiRegex.test(title)) {
+    return { error: '제목에 이모지를 사용할 수 없습니다.' }
+  }
+  if (emojiRegex.test(content)) {
+    return { error: '내용에 이모지를 사용할 수 없습니다.' }
+  }
+
   try {
     const client = await createClient()
     await client.mentoring.create({
@@ -48,7 +57,9 @@ export async function createMentoring(
       regEnd: regEnd || undefined,
       content: content || undefined,
     })
+    console.log('[Action] Mentoring created successfully')
   } catch (error) {
+    console.log('[Action] Error caught:', error)
     if (error instanceof AuthenticationError) {
       redirect('/login')
     }
@@ -114,4 +125,27 @@ export async function reserveRoomFromMentoring(params: {
     slots: params.slots,
     title: params.title,
   })
+}
+
+export async function fetchRoomReservations(): Promise<
+  Array<{
+    title: string
+    url: string
+    status: string
+    date?: string
+    time?: string
+    venue?: string
+    timeEnd?: string
+  }>
+> {
+  try {
+    const client = await createClient()
+    const dashboard = await client.dashboard.get()
+    return dashboard.roomReservations
+  } catch (error) {
+    if (error instanceof AuthenticationError) {
+      redirect('/login')
+    }
+    throw error
+  }
 }

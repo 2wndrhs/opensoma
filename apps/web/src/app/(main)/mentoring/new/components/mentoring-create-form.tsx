@@ -4,6 +4,10 @@ import { useActionState, useRef, useState, useTransition } from 'react'
 
 import { createMentoring, reserveRoomFromMentoring } from '@/app/(main)/mentoring/new/actions'
 import {
+  ExistingReservationSelector,
+  type RoomReservation,
+} from '@/app/(main)/mentoring/new/components/existing-reservation-selector'
+import {
   MentoringRoomTimeline,
   type TimelineSelection,
 } from '@/app/(main)/mentoring/new/components/mentoring-room-timeline'
@@ -22,6 +26,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/ui/toggle-group'
 interface MentoringCreateFormProps {
   initialRooms: RoomCard[]
   initialDate: string
+  existingReservations: RoomReservation[]
   defaultValues?: {
     date?: string
     startTime?: string
@@ -73,9 +78,9 @@ function isSmallRoom(name: string) {
   return /^스페이스 A\d$/.test(name)
 }
 
-export function MentoringCreateForm({ initialRooms, initialDate, defaultValues }: MentoringCreateFormProps) {
+export function MentoringCreateForm({ initialRooms, initialDate, existingReservations, defaultValues }: MentoringCreateFormProps) {
   const [state, formAction, isPending] = useActionState(createMentoring, initialState)
-  const [mode, setMode] = useState<'timeline' | 'manual'>(defaultValues?.venue ? 'manual' : 'timeline')
+  const [mode, setMode] = useState<'timeline' | 'existing' | 'manual'>(defaultValues?.venue ? 'manual' : existingReservations.length > 0 ? 'existing' : 'timeline')
   const [mentoringType, setMentoringType] = useState<'free' | 'lecture'>('free')
   const isLecture = mentoringType === 'lecture'
   const titleRef = useRef<HTMLInputElement>(null)
@@ -92,14 +97,18 @@ export function MentoringCreateForm({ initialRooms, initialDate, defaultValues }
   const [confirmed, setConfirmed] = useState(false)
   const [contentHtml, setContentHtml] = useState('')
 
-  const derivedDate = mode === 'timeline' && timelineSelection ? timelineSelection.date : manualDate
+  const isExistingMode = mode === 'existing'
+  const isTimelineMode = mode === 'timeline'
+  const hasSelection = timelineSelection !== null
+
+  const derivedDate = (isTimelineMode || isExistingMode) && hasSelection ? timelineSelection.date : manualDate
   const derivedStartTime =
-    mode === 'timeline' && timelineSelection ? timelineSelection.selectedSlots[0] : manualStartTime
+    (isTimelineMode || isExistingMode) && hasSelection ? timelineSelection.selectedSlots[0] : manualStartTime
   const derivedEndTime =
-    mode === 'timeline' && timelineSelection
+    (isTimelineMode || isExistingMode) && hasSelection
       ? addThirtyMinutes(timelineSelection.selectedSlots[timelineSelection.selectedSlots.length - 1])
       : manualEndTime
-  const derivedVenue = mode === 'timeline' && timelineSelection ? timelineSelection.roomName : manualVenue
+  const derivedVenue = (isTimelineMode || isExistingMode) && hasSelection ? timelineSelection.roomName : manualVenue
 
   function handleTimelineSelect(selection: TimelineSelection | null) {
     setTimelineSelection(selection)
@@ -180,13 +189,31 @@ export function MentoringCreateForm({ initialRooms, initialDate, defaultValues }
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-foreground">장소 및 시간</h3>
-                <ToggleGroup value={mode} onValueChange={(v) => setMode(v as 'timeline' | 'manual')}>
-                  <ToggleGroupItem value="timeline">소마 내부</ToggleGroupItem>
+                <ToggleGroup value={mode} onValueChange={(v) => setMode(v as 'timeline' | 'existing' | 'manual')}>
+                  <ToggleGroupItem value="timeline">회의실 예약</ToggleGroupItem>
+                  {existingReservations.length > 0 && (
+                    <ToggleGroupItem value="existing">기존 예약</ToggleGroupItem>
+                  )}
                   <ToggleGroupItem value="manual">외부 / 온라인</ToggleGroupItem>
                 </ToggleGroup>
               </div>
 
-              {mode === 'timeline' ? (
+              {mode === 'existing' ? (
+                <div className="space-y-4">
+                  {hasSelection ? (
+                    <div className="flex items-center gap-2 rounded-lg border border-border bg-surface p-4">
+                      <span className="text-lg">✅</span>
+                      <span className="text-sm text-foreground">
+                        {timelineSelection.roomName} · {derivedStartTime} ~ {derivedEndTime} 선택됨
+                      </span>
+                    </div>
+                  ) : null}
+                  <ExistingReservationSelector
+                    reservations={existingReservations}
+                    onSelect={handleTimelineSelect}
+                  />
+                </div>
+              ) : mode === 'timeline' ? (
                 <div className="space-y-4">
                   {confirmed && timelineSelection ? (
                     <div className="flex items-center gap-2 rounded-lg border border-border bg-surface p-4">

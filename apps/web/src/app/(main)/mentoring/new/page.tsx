@@ -1,3 +1,4 @@
+import { fetchRoomReservations } from '@/app/(main)/mentoring/new/actions'
 import { MentoringCreateForm } from '@/app/(main)/mentoring/new/components/mentoring-create-form'
 import { requireAuth } from '@/lib/auth'
 
@@ -16,9 +17,19 @@ export default async function MentoringCreatePage({
 
   const initialDate = defaultValues.date ?? new Date().toISOString().slice(0, 10)
   const client = await requireAuth()
-  const initialRooms = await client.room.list({ date: initialDate })
+  const [initialRooms, existingReservations] = await Promise.all([
+    client.room.list({ date: initialDate }),
+    fetchRoomReservations(),
+  ])
 
-  return <MentoringCreateForm defaultValues={defaultValues} initialDate={initialDate} initialRooms={initialRooms} />
+  return (
+    <MentoringCreateForm
+      defaultValues={defaultValues}
+      initialDate={initialDate}
+      initialRooms={initialRooms}
+      existingReservations={existingReservations}
+    />
+  )
 }
 
 function getFirstValue(value: string | string[] | undefined): string | undefined {
