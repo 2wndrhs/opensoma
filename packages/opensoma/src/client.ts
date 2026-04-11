@@ -32,6 +32,7 @@ export interface SomaClientOptions {
   csrfToken?: string
   username?: string
   password?: string
+  verbose?: boolean
 }
 
 export class SomaClient {
@@ -105,6 +106,7 @@ export class SomaClient {
     this.http = new SomaHttp({
       sessionCookie: options.sessionCookie,
       csrfToken: options.csrfToken,
+      verbose: options.verbose,
     })
 
     this.mentoring = {
@@ -138,7 +140,10 @@ export class SomaClient {
       },
       create: async (params) => {
         await this.requireAuth()
-        await this.http.post('/mypage/mentoLec/insert.do', buildMentoringPayload(params))
+        const html = await this.http.post('/mypage/mentoLec/insert.do', buildMentoringPayload(params))
+        if (this.containsErrorIndicator(html)) {
+          throw new Error(this.extractErrorMessage(html) || '멘토링 등록에 실패했습니다.')
+        }
       },
       delete: async (id) => {
         await this.requireAuth()
@@ -328,5 +333,32 @@ export class SomaClient {
       username: this.options.username,
       loggedInAt: new Date().toISOString(),
     })
+  }
+
+  private containsErrorIndicator(html: string): boolean {
+    const errorPatterns = [
+      'class="error"',
+      'class="alert-danger"',
+      'alert-error',
+      '오류가 발생했습니다',
+      '등록에 실패했습니다',
+      '실패하였습니다',
+      '잘못된 접근',
+      '권한이 없습니다',
+      '<script>alert(',
+    ]
+    return errorPatterns.some((pattern) => html.includes(pattern))
+  }
+
+  private extractErrorMessage(html: string): string | null {
+    const alertMatch = html.match(/<script>alert\(['"](.+?)['"]\)/)
+    if (alertMatch) {
+      return alertMatch[1]
+    }
+    const errorDivMatch = html.match(/class="error[^"]*"[^>]*>\s*([^<]+)/)
+    if (errorDivMatch) {
+      return errorDivMatch[1].trim()
+    }
+    return null
   }
 }

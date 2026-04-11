@@ -10,5 +10,6 @@ export async function createClient(): Promise<SomaClient> {
   return new SomaClient({
     sessionCookie: session.sessionCookie,
     csrfToken: session.csrfToken,
+    verbose: process.env.OPENSOMA_VERBOSE === 'true',
   })
 }

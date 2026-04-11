@@ -57,9 +57,7 @@ export async function createMentoring(
       regEnd: regEnd || undefined,
       content: content || undefined,
     })
-    console.log('[Action] Mentoring created successfully')
   } catch (error) {
-    console.log('[Action] Error caught:', error)
     if (error instanceof AuthenticationError) {
       redirect('/login')
     }
