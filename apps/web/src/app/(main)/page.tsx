@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { StatusBadge } from '@/components/status-badge'
 import { requireAuth } from '@/lib/auth'
 import { cn } from '@/lib/cn'
+import { convertSwmaestroUrl } from '@/lib/swmaestro-url'
 import { Badge } from '@/ui/badge'
 import { Card, CardContent, CardHeader } from '@/ui/card'
 import { EmptyState } from '@/ui/empty-state'
@@ -202,7 +203,7 @@ function MentoringCard({
                     <StatusBadge status={item.status} />
                   </div>
                   <Link
-                    href={toInternalHref(item.url)}
+                    href={convertSwmaestroUrl(item.url)}
                     className={cn(
                       'font-medium hover:text-primary',
                       isPast ? 'text-foreground-muted' : 'text-foreground',
@@ -245,7 +246,7 @@ function RoomReservationCard({ items }: { items: Array<{ title: string; url: str
                 className="flex items-center justify-between gap-4 rounded-lg bg-muted/50 p-4 transition-colors duration-150 hover:bg-surface-hover"
               >
                 <Link
-                  href={toInternalHref(item.url)}
+                  href={convertSwmaestroUrl(item.url)}
                   className="text-sm font-semibold text-foreground hover:text-primary"
                 >
                   {item.title}
@@ -258,27 +259,6 @@ function RoomReservationCard({ items }: { items: Array<{ title: string; url: str
       </CardContent>
     </Card>
   )
-}
-
-function toInternalHref(url: string) {
-  const parsed = new URL(url, 'https://www.swmaestro.ai')
-  const pathname = parsed.pathname
-  const mentoringId = parsed.searchParams.get('qustnrSn')
-  const noticeId = parsed.searchParams.get('nttId')
-
-  if (pathname.includes('/mentoLec/view.do') && mentoringId) {
-    return `/mentoring/${mentoringId}`
-  }
-
-  if (pathname.includes('/myNotice/view.do') && noticeId) {
-    return `/notice/${noticeId}`
-  }
-
-  if (pathname.includes('/itemRent/') || pathname.includes('/officeMng/')) {
-    return '/room'
-  }
-
-  return '/'
 }
 
 function parseTime(timeStr: string): number {

@@ -1,5 +1,7 @@
 import sanitizeHtml from 'sanitize-html'
 
+import { convertSwmaestroUrl } from '@/lib/swmaestro-url'
+
 interface HtmlContentProps {
   content: string
 }
@@ -57,6 +59,15 @@ export function HtmlContent({ content }: HtmlContentProps) {
       a: ['href', 'name', 'target', 'rel'],
       img: ['src', 'alt', 'title'],
       '*': ['class'],
+    },
+    transformTags: {
+      a: (tagName, attribs) => ({
+        tagName,
+        attribs: {
+          ...attribs,
+          href: convertSwmaestroUrl(attribs.href),
+        },
+      }),
     },
   })
 
