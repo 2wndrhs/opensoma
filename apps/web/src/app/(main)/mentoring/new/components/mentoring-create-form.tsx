@@ -8,6 +8,7 @@ import {
   type TimelineSelection,
 } from '@/app/(main)/mentoring/new/components/mentoring-room-timeline'
 import { addThirtyMinutes } from '@/app/(main)/room/lib/room-mentoring'
+import { RichTextEditor } from '@/components/rich-text-editor/editor'
 import type { RoomCard } from '@/lib/sdk'
 import { Button } from '@/ui/button'
 import { Card, CardContent, CardHeader } from '@/ui/card'
@@ -16,7 +17,6 @@ import { Field, FieldDescription, FieldLabel } from '@/ui/field'
 import { Input } from '@/ui/input'
 import { RadioGroup, RadioItem } from '@/ui/radio-group'
 import { Select, SelectGroup, SelectItem, SelectPopup, SelectTrigger } from '@/ui/select'
-import { Textarea } from '@/ui/textarea'
 import { ToggleGroup, ToggleGroupItem } from '@/ui/toggle-group'
 
 interface MentoringCreateFormProps {
@@ -90,6 +90,7 @@ export function MentoringCreateForm({ initialRooms, initialDate, defaultValues }
   const [reserveState, setReserveState] = useState({ error: '', success: '' })
   const [isReserving, startReserveTransition] = useTransition()
   const [confirmed, setConfirmed] = useState(false)
+  const [contentHtml, setContentHtml] = useState('')
 
   const derivedDate = mode === 'timeline' && timelineSelection ? timelineSelection.date : manualDate
   const derivedStartTime =
@@ -200,12 +201,12 @@ export function MentoringCreateForm({ initialRooms, initialDate, defaultValues }
                     <CollapsibleTrigger>회의실 타임라인</CollapsibleTrigger>
                     <CollapsiblePanel>
                       <div className="space-y-4">
-                      <MentoringRoomTimeline
-                        excludeSmallRooms={isLecture}
-                        initialDate={initialDate}
-                        initialRooms={initialRooms}
-                        onSelect={handleTimelineSelect}
-                      />
+                        <MentoringRoomTimeline
+                          excludeSmallRooms={isLecture}
+                          initialDate={initialDate}
+                          initialRooms={initialRooms}
+                          onSelect={handleTimelineSelect}
+                        />
 
                         {timelineSelection && timelineSelection.selectedSlots.length > 0 && !confirmed ? (
                           <div className="space-y-3 rounded-lg border border-border bg-surface p-4">
@@ -251,9 +252,7 @@ export function MentoringCreateForm({ initialRooms, initialDate, defaultValues }
                         <SelectTrigger placeholder="장소를 선택하세요" />
                         <SelectPopup>
                           {venues.map((group) => {
-                            const filtered = isLecture
-                              ? group.items.filter((item) => !isSmallRoom(item))
-                              : group.items
+                            const filtered = isLecture ? group.items.filter((item) => !isSmallRoom(item)) : group.items
                             if (filtered.length === 0) return null
                             return (
                               <SelectGroup key={group.group} label={group.group}>
@@ -328,7 +327,8 @@ export function MentoringCreateForm({ initialRooms, initialDate, defaultValues }
             <Field name="content">
               <FieldLabel>상세 내용</FieldLabel>
               <FieldDescription>멘토링 소개, 준비물, 참여 안내 등을 작성해주세요.</FieldDescription>
-              <Textarea className="min-h-48" name="content" placeholder="세션 설명을 입력해주세요" />
+              <input name="content" type="hidden" value={contentHtml} />
+              <RichTextEditor onUpdate={setContentHtml} />
             </Field>
 
             {state.error ? <p className="text-sm text-danger">{state.error}</p> : null}
