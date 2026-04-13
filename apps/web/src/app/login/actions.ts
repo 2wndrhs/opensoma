@@ -16,8 +16,13 @@ export async function login(_prevState: { error: string }, formData: FormData): 
   try {
     const client = new SomaClient({ username, password })
     await client.login()
-    const sessionData = client.getSessionData()
 
+    const loggedIn = await client.isLoggedIn()
+    if (!loggedIn) {
+      return { error: '아이디 또는 비밀번호가 올바르지 않습니다.' }
+    }
+
+    const sessionData = client.getSessionData()
     if (!sessionData.sessionCookie || !sessionData.csrfToken) {
       return { error: '로그인에 실패했습니다.' }
     }
