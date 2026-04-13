@@ -7,7 +7,6 @@ type SessionLike = {
   isLoggedIn?: boolean
   sessionCookie?: string
   csrfToken?: string
-  destroy(): void
 }
 
 export async function validateClientSession<T extends Pick<SomaClient, 'isLoggedIn'>>(
@@ -20,7 +19,6 @@ export async function validateClientSession<T extends Pick<SomaClient, 'isLogged
 
   const isValid = await client.isLoggedIn()
   if (!isValid) {
-    session.destroy()
     throw new AuthenticationError(NOT_AUTHENTICATED_MESSAGE)
   }
 

@@ -38,7 +38,7 @@ export async function performRoomReservation(params: ReserveRoomParams): Promise
     })
   } catch (error) {
     if (error instanceof AuthenticationError) {
-      redirect('/login')
+      redirect('/logout')
     }
     return {
       error: error instanceof Error ? error.message : '회의실 예약에 실패했습니다.',

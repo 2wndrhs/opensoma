@@ -8,7 +8,7 @@ export async function requireAuth(): Promise<SomaClient> {
     return await createClient()
   } catch (error) {
     if (error instanceof AuthenticationError) {
-      redirect('/login')
+      redirect('/logout')
     }
     throw error
   }

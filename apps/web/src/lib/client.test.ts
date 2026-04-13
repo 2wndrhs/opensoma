@@ -10,7 +10,6 @@ describe('validateClientSession', () => {
       validateClientSession(
         {
           isLoggedIn: false,
-          destroy() {},
         },
         {
           isLoggedIn: async () => true,
@@ -19,26 +18,19 @@ describe('validateClientSession', () => {
     ).rejects.toBeInstanceOf(AuthenticationError)
   })
 
-  it('destroys the local session when upstream auth is invalid', async () => {
-    let destroyed = false
-
+  it('throws when upstream auth is invalid without mutating the local session', async () => {
     await expect(
       validateClientSession(
         {
           isLoggedIn: true,
           sessionCookie: 'session-cookie',
           csrfToken: 'csrf-token',
-          destroy() {
-            destroyed = true
-          },
         },
         {
           isLoggedIn: async () => false,
         },
       ),
     ).rejects.toBeInstanceOf(AuthenticationError)
-
-    expect(destroyed).toBe(true)
   })
 
   it('returns the client when both local and upstream auth are valid', async () => {
@@ -52,7 +44,6 @@ describe('validateClientSession', () => {
           isLoggedIn: true,
           sessionCookie: 'session-cookie',
           csrfToken: 'csrf-token',
-          destroy() {},
         },
         client,
       ),

@@ -59,7 +59,7 @@ export async function createMentoring(
     })
   } catch (error) {
     if (error instanceof AuthenticationError) {
-      redirect('/login')
+      redirect('/logout')
     }
     return { error: error instanceof Error ? error.message : '멘토링 등록에 실패했습니다.' }
   }
@@ -87,7 +87,7 @@ export async function fetchRoomAvailability(
     return { slots }
   } catch (error) {
     if (error instanceof AuthenticationError) {
-      redirect('/login')
+      redirect('/logout')
     }
     return { error: error instanceof Error ? error.message : '회의실 정보를 불러오지 못했습니다.' }
   }
@@ -99,7 +99,7 @@ export async function fetchRooms(date: string, room?: string): Promise<RoomCard[
     return await client.room.list({ date, room: room || undefined })
   } catch (error) {
     if (error instanceof AuthenticationError) {
-      redirect('/login')
+      redirect('/logout')
     }
     throw error
   }
@@ -142,7 +142,7 @@ export async function fetchRoomReservations(): Promise<
     return dashboard.roomReservations
   } catch (error) {
     if (error instanceof AuthenticationError) {
-      redirect('/login')
+      redirect('/logout')
     }
     throw error
   }
