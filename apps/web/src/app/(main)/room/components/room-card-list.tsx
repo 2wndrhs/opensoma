@@ -38,7 +38,9 @@ export function RoomCardList({ rooms, date }: RoomCardListProps) {
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-4">
                   <h2 className="text-lg font-semibold text-foreground">{room.name}</h2>
-                  <span className="text-sm text-foreground-muted">정원 {room.capacity}명</span>
+                  <span className="text-sm text-foreground-muted">
+                      정원 {room.capacity === 0 ? '무제한' : `${room.capacity}명`}
+                    </span>
                 </div>
                 <p className="text-sm text-foreground-muted">{room.description}</p>
                 <p className="text-xs text-foreground-muted">

@@ -160,7 +160,9 @@ export function MentoringRoomTimeline({
                       className="min-w-28 border-r border-b border-border px-2 py-2 text-center text-xs font-medium last:border-r-0"
                     >
                       <div className="text-foreground">{room.name}</div>
-                      <div className="font-normal text-foreground-muted">{room.capacity}명</div>
+                      <div className="font-normal text-foreground-muted">
+                        {room.capacity === 0 ? '무제한' : `${room.capacity}명`}
+                      </div>
                     </th>
                   ))}
                 </tr>
