@@ -21,6 +21,9 @@ describe('createAuthenticatedHttp', () => {
         sessionCookie: 'stale-session',
         csrfToken: 'csrf-token',
       }),
+      setCredentials: async () => {
+        throw new Error('should not save unrecoverable credentials')
+      },
       remove: async () => {
         removed = true
       },
@@ -46,11 +49,61 @@ describe('createAuthenticatedHttp', () => {
         sessionCookie: 'valid-session',
         csrfToken: 'csrf-token',
       }),
+      setCredentials: async () => {
+        throw new Error('should not rewrite valid credentials')
+      },
       remove: async () => {
         throw new Error('should not remove valid credentials')
       },
     }
 
     await expect(createAuthenticatedHttp(manager, () => http)).resolves.toBe(http)
+  })
+
+  test('re-authenticates automatically when stored username/password are available', async () => {
+    let savedCredentials: Record<string, string> | null = null
+    const manager = {
+      getCredentials: async () => ({
+        sessionCookie: 'stale-session',
+        csrfToken: 'stale-csrf',
+        username: 'neo@example.com',
+        password: 'secret',
+      }),
+      setCredentials: async (credentials: Record<string, string>) => {
+        savedCredentials = credentials
+      },
+      remove: async () => {
+        throw new Error('should not remove recoverable credentials')
+      },
+    }
+    const recoveredHttp = { checkLogin: async () => ({ userId: 'neo@example.com', userNm: 'Neo' }), get: async () => '' }
+
+    await expect(
+      createAuthenticatedHttp(
+        manager,
+        (credentials) => {
+          if (credentials.sessionCookie === 'fresh-session') {
+            return recoveredHttp
+          }
+
+          return {
+            checkLogin: async () => null,
+          }
+        },
+        () => ({
+          login: async () => {},
+          checkLogin: async () => ({ userId: 'neo@example.com', userNm: 'Neo' }),
+          getSessionCookie: () => 'fresh-session',
+          getCsrfToken: () => 'fresh-csrf',
+        }),
+      ),
+    ).resolves.toBe(recoveredHttp)
+
+    expect(savedCredentials).toMatchObject({
+      sessionCookie: 'fresh-session',
+      csrfToken: 'fresh-csrf',
+      username: 'neo@example.com',
+      password: 'secret',
+    })
   })
 })

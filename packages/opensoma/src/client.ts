@@ -2,8 +2,8 @@ import { MENU_NO } from './constants'
 import { CredentialManager } from './credential-manager'
 import { AuthenticationError } from './errors'
 import * as formatters from './formatters'
-import { type UserIdentity, SomaHttp } from './http'
-import { type MentoringSearchQuery, buildMentoringListParams } from './shared/utils/mentoring-params'
+import { SomaHttp, type UserIdentity } from './http'
+import { buildMentoringListParams, type MentoringSearchQuery } from './shared/utils/mentoring-params'
 import {
   buildApplicationPayload,
   buildCancelApplicationPayload,
@@ -38,6 +38,7 @@ export interface SomaClientOptions {
 export class SomaClient {
   private readonly http: SomaHttp
   private readonly options: SomaClientOptions
+  private loginCredentials: { username: string; password: string } | null
 
   readonly mentoring: {
     list(options?: {
@@ -103,6 +104,7 @@ export class SomaClient {
 
   constructor(options: SomaClientOptions = {}) {
     this.options = options
+    this.loginCredentials = options.username && options.password ? { username: options.username, password: options.password } : null
     this.http = new SomaHttp({
       sessionCookie: options.sessionCookie,
       csrfToken: options.csrfToken,
@@ -293,7 +295,12 @@ export class SomaClient {
   }
 
   private async requireAuth(): Promise<void> {
-    const identity = await this.http.checkLogin()
+    let identity = await this.http.checkLogin()
+    if (!identity && this.loginCredentials) {
+      await this.http.login(this.loginCredentials.username, this.loginCredentials.password)
+      identity = await this.http.checkLogin()
+    }
+
     if (!identity) {
       throw new AuthenticationError()
     }
@@ -313,6 +320,10 @@ export class SomaClient {
     }
 
     await this.http.login(resolvedUsername, resolvedPassword)
+    this.loginCredentials = {
+      username: resolvedUsername,
+      password: resolvedPassword,
+    }
   }
 
   async isLoggedIn(): Promise<boolean> {
@@ -334,7 +345,8 @@ export class SomaClient {
     await manager.setCredentials({
       sessionCookie,
       csrfToken,
-      username: this.options.username,
+      username: this.loginCredentials?.username,
+      password: this.loginCredentials?.password,
       loggedInAt: new Date().toISOString(),
     })
   }

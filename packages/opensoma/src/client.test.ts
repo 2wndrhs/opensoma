@@ -1,7 +1,11 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
+import { mkdtemp } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 import { SomaClient } from './client'
 import { MENU_NO } from './constants'
+import { CredentialManager } from './credential-manager'
 import { AuthenticationError } from './errors'
 import type { SomaHttp } from './http'
 
@@ -253,6 +257,52 @@ describe('SomaClient', () => {
 
     expect(calls).toEqual(['neo@example.com:secret'])
     await expect(client.isLoggedIn()).resolves.toBe(true)
+  })
+
+  test('auth-required operations re-login automatically when username/password are configured', async () => {
+    const client = new SomaClient({ username: 'neo@example.com', password: 'secret' })
+    const calls: string[] = []
+    let authChecks = 0
+    Reflect.set(client, 'http', {
+      checkLogin: async () => {
+        authChecks += 1
+        return authChecks >= 2 ? { userId: 'neo@example.com', userNm: '전수열' } : null
+      },
+      login: async (username: string, password: string) => {
+        calls.push(`${username}:${password}`)
+      },
+      get: async () =>
+        '<table><tbody><tr><td>1</td><td><a href="/sw/mypage/mentoLec/view.do?qustnrSn=123">[자유 멘토링] 제목 [접수중]</a></td><td>2026-04-01 ~ 2026-04-02</td><td>2026-04-03(목) 10:00 ~ 11:00</td><td>1 /4</td><td>OK</td><td>[접수중]</td><td>작성자</td><td>2026-04-01</td></tr></tbody></table><ul class="bbs-total"><li>Total : 1</li><li>1/1 Page</li></ul>',
+    })
+
+    await expect(client.mentoring.list()).resolves.toMatchObject({
+      items: [expect.objectContaining({ id: 123, title: '제목' })],
+    })
+    expect(calls).toEqual(['neo@example.com:secret'])
+  })
+
+  test('saveCredentials persists the credentials used by login()', async () => {
+    const client = new SomaClient()
+    const dir = await mkdtemp(join(tmpdir(), 'opensoma-client-save-'))
+    const manager = new CredentialManager(dir)
+    Reflect.set(client, 'http', {
+      login: async () => {},
+      getSessionCookie: () => 'session-1',
+      getCsrfToken: () => 'csrf-1',
+    })
+
+    await client.login('neo@example.com', 'secret')
+    await client.saveCredentials(manager)
+
+    await expect(manager.getCredentials()).resolves.toEqual({
+      sessionCookie: 'session-1',
+      csrfToken: 'csrf-1',
+      username: 'neo@example.com',
+      password: 'secret',
+      loggedInAt: expect.any(String),
+    })
+
+    await manager.remove()
   })
 
   test('logout delegates to SomaHttp', async () => {
