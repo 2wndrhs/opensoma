@@ -76,7 +76,10 @@ describe('createAuthenticatedHttp', () => {
         throw new Error('should not remove recoverable credentials')
       },
     }
-    const recoveredHttp = { checkLogin: async () => ({ userId: 'neo@example.com', userNm: 'Neo' }), get: async () => '' }
+    const recoveredHttp = {
+      checkLogin: async () => ({ userId: 'neo@example.com', userNm: 'Neo' }),
+      get: async () => '',
+    }
 
     await expect(
       createAuthenticatedHttp(
