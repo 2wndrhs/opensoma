@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from 'bun:test'
-import { mkdtemp, stat } from 'node:fs/promises'
+import { mkdtemp, readFile, rm, stat } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -31,6 +31,7 @@ describe('CredentialManager', () => {
       sessionCookie: 'session-value',
       csrfToken: 'csrf-value',
       username: 'neo@example.com',
+      password: 'secret-password',
       loggedInAt: '2026-04-09T00:00:00.000Z',
     })
 
@@ -38,11 +39,18 @@ describe('CredentialManager', () => {
       sessionCookie: 'session-value',
       csrfToken: 'csrf-value',
       username: 'neo@example.com',
+      password: 'secret-password',
       loggedInAt: '2026-04-09T00:00:00.000Z',
     })
 
+    const rawContent = await readFile(join(dir, 'credentials.json'), 'utf8')
+    expect(rawContent).not.toContain('secret-password')
+
     const fileStat = await stat(join(dir, 'credentials.json'))
     expect(fileStat.mode & 0o777).toBe(0o600)
+
+    const keyFileStat = await stat(join(dir, 'credentials.key'))
+    expect(keyFileStat.mode & 0o777).toBe(0o600)
   })
 
   test('removes credentials file', async () => {
@@ -56,6 +64,38 @@ describe('CredentialManager', () => {
     await manager.remove()
 
     await expect(manager.getCredentials()).resolves.toBeNull()
+  })
+
+  test('preserves session credentials when the encryption key is missing', async () => {
+    const dir = await makeTempDir()
+    const manager = new CredentialManager(dir)
+
+    await manager.setCredentials({
+      sessionCookie: 'session-value',
+      csrfToken: 'csrf-value',
+      username: 'neo@example.com',
+      password: 'secret-password',
+      loggedInAt: '2026-04-09T00:00:00.000Z',
+    })
+
+    await new CredentialManager(dir).remove()
+    await manager.save({
+      credentials: {
+        sessionCookie: 'session-value',
+        csrfToken: 'csrf-value',
+        username: 'neo@example.com',
+        password: 'secret-password',
+        loggedInAt: '2026-04-09T00:00:00.000Z',
+      },
+    })
+    await rm(join(dir, 'credentials.key'))
+
+    await expect(manager.getCredentials()).resolves.toEqual({
+      sessionCookie: 'session-value',
+      csrfToken: 'csrf-value',
+      username: 'neo@example.com',
+      loggedInAt: '2026-04-09T00:00:00.000Z',
+    })
   })
 })
 

@@ -135,6 +135,7 @@ export const CredentialsSchema = z.object({
   cookies: z.string().optional(),
   csrfToken: z.string(),
   username: z.string().optional(),
+  password: z.string().optional(),
   loggedInAt: z.string().optional(),
 })
 export type Credentials = z.infer<typeof CredentialsSchema>
