@@ -15,6 +15,7 @@ import {
 } from './shared/utils/swmaestro'
 import type {
   ApplicationHistoryItem,
+  ApprovalListItem,
   Dashboard,
   EventListItem,
   MemberInfo,
@@ -23,6 +24,8 @@ import type {
   NoticeDetail,
   NoticeListItem,
   Pagination,
+  ReportDetail,
+  ReportListItem,
   RoomCard,
   TeamInfo,
 } from './types'
@@ -86,6 +89,20 @@ export class SomaClient {
   readonly notice: {
     list(options?: { page?: number }): Promise<{ items: NoticeListItem[]; pagination: Pagination }>
     get(id: number): Promise<NoticeDetail>
+  }
+
+  readonly report: {
+    list(options?: {
+      page?: number
+      searchField?: string
+      searchKeyword?: string
+    }): Promise<{ items: ReportListItem[]; pagination: Pagination }>
+    get(id: number): Promise<ReportDetail>
+    approval(options?: {
+      page?: number
+      month?: string
+      reportType?: string
+    }): Promise<{ items: ApprovalListItem[]; pagination: Pagination }>
   }
 
   readonly team: {
@@ -241,6 +258,45 @@ export class SomaClient {
           }),
           id,
         )
+      },
+    }
+
+    this.report = {
+      list: async (options) => {
+        await this.requireAuth()
+        const params: Record<string, string> = {
+          menuNo: MENU_NO.REPORT,
+          pageIndex: String(options?.page ?? 1),
+        }
+        if (options?.searchField !== undefined) params.searchCnd = options.searchField
+        if (options?.searchKeyword) params.searchWrd = options.searchKeyword
+        const html = await this.http.get('/mypage/mentoringReport/list.do', params)
+        return {
+          items: formatters.parseReportList(html),
+          pagination: formatters.parsePagination(html),
+        }
+      },
+      get: async (id) => {
+        await this.requireAuth()
+        const html = await this.http.get('/mypage/mentoringReport/view.do', {
+          menuNo: MENU_NO.REPORT,
+          reportId: String(id),
+        })
+        return formatters.parseReportDetail(html, id)
+      },
+      approval: async (options) => {
+        await this.requireAuth()
+        const params: Record<string, string> = {
+          menuNo: MENU_NO.REPORT_APPROVAL,
+          pageIndex: String(options?.page ?? 1),
+        }
+        if (options?.month) params.searchMonth = options.month
+        if (options?.reportType !== undefined) params.searchReport = options.reportType
+        const html = await this.http.get('/mypage/mentoringReport/resultList.do', params)
+        return {
+          items: formatters.parseApprovalList(html),
+          pagination: formatters.parsePagination(html),
+        }
       },
     }
 
