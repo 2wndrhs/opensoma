@@ -27,3 +27,5 @@ coverage/
 .env.local
 
 .sisyphus
+.webreel/
+debug-calendar.png
