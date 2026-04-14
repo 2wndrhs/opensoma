@@ -52,6 +52,21 @@ describe('SomaHttp', () => {
     expect(html).toBe('<html>ok</html>')
   })
 
+  test('post surfaces alert errors from script tags with attributes', async () => {
+    const fetchMock = mock(async () =>
+      createResponse(
+        `<html><head><title>빈페이지</title></head><body><script type='text/javascript'>alert('아이디 혹은 비밀번호가 일치 하지 않습니다.');location.href='/login';</script></body></html>`,
+      ),
+    )
+    globalThis.fetch = fetchMock as typeof fetch
+
+    const http = new SomaHttp({ sessionCookie: 'session-1', csrfToken: 'csrf-1' })
+
+    await expect(http.post('/member/user/toLogin.do', { username: 'neo@example.com' })).rejects.toThrow(
+      '아이디 혹은 비밀번호가 일치 하지 않습니다.',
+    )
+  })
+
   describe('postMultipart', () => {
     test('passes FormData to fetch', async () => {
       const fetchMock = mock(async (_input: RequestInfo | URL, init?: RequestInit) => {
