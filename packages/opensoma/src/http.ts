@@ -213,7 +213,7 @@ export class SomaHttp {
       body.match(/<title>([^<]*)<\/title>/)?.[1],
     )
 
-    const alertMatch = body.match(/<script>\s*alert\(['"](.+?)['"]\)\s*<\/script>/)
+    const alertMatch = body.match(/<script\b[^>]*>[\s\S]*?alert\(['"](.+?)['"]\)[\s\S]*?<\/script>/i)
     if (alertMatch) {
       this.log('Found alert match:', alertMatch[1])
       return alertMatch[1]
