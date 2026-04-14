@@ -5,7 +5,7 @@ import { Command } from 'commander'
 import * as formatters from '../formatters'
 import { handleError } from '../shared/utils/error-handler'
 import { formatOutput } from '../shared/utils/output'
-import { buildReportPayload } from '../shared/utils/swmaestro'
+import { buildReportPayload, toRegionCode, toReportTypeCd } from '../shared/utils/swmaestro'
 import { getHttpOrExit } from './helpers'
 
 type ListOptions = {
@@ -168,24 +168,32 @@ async function createAction(options: CreateOptions): Promise<void> {
 async function updateAction(id: string, options: UpdateOptions): Promise<void> {
   try {
     const http = await getHttpOrExit()
+    const html = await http.get('/mypage/mentoringReport/view.do', {
+      menuNo: '200049',
+      reportId: id,
+    })
+    const existing = formatters.parseReportDetail(html, Number(id))
+
     const payload = buildReportPayload({
-      menteeRegion: (options.region as 'S' | 'B') ?? 'S',
-      reportType: (options.type as 'MRC010' | 'MRC020') ?? 'MRC010',
-      progressDate: options.date ?? '',
-      teamNames: options.team,
-      venue: options.venue ?? '',
-      attendanceCount: options.attendanceCount ? Number.parseInt(options.attendanceCount, 10) : 0,
-      attendanceNames: options.attendanceNames ?? '',
-      progressStartTime: options.startTime ?? '',
-      progressEndTime: options.endTime ?? '',
-      exceptStartTime: options.exceptStart,
-      exceptEndTime: options.exceptEnd,
-      exceptReason: options.exceptReason,
-      subject: options.subject ?? '',
-      content: options.content ?? '',
-      mentorOpinion: options.mentorOpinion,
-      nonAttendanceNames: options.nonAttendance,
-      etc: options.etc,
+      menteeRegion: (options.region as 'S' | 'B') ?? toRegionCode(existing.menteeRegion),
+      reportType: (options.type as 'MRC010' | 'MRC020') ?? toReportTypeCd(existing.reportType),
+      progressDate: options.date ?? existing.progressDate,
+      teamNames: options.team ?? existing.teamNames,
+      venue: options.venue ?? existing.venue,
+      attendanceCount: options.attendanceCount
+        ? Number.parseInt(options.attendanceCount, 10)
+        : existing.attendanceCount,
+      attendanceNames: options.attendanceNames ?? existing.attendanceNames,
+      progressStartTime: options.startTime ?? existing.progressStartTime,
+      progressEndTime: options.endTime ?? existing.progressEndTime,
+      exceptStartTime: options.exceptStart ?? existing.exceptStartTime,
+      exceptEndTime: options.exceptEnd ?? existing.exceptEndTime,
+      exceptReason: options.exceptReason ?? existing.exceptReason,
+      subject: options.subject ?? existing.subject,
+      content: options.content ?? existing.content,
+      mentorOpinion: options.mentorOpinion ?? existing.mentorOpinion,
+      nonAttendanceNames: options.nonAttendance ?? existing.nonAttendanceNames,
+      etc: options.etc ?? existing.etc,
       reportId: Number.parseInt(id, 10),
     })
 

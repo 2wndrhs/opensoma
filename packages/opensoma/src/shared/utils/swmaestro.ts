@@ -215,6 +215,16 @@ function extractNumber(value: string): number {
   return match ? Number.parseInt(match[0], 10) : 0
 }
 
+export function toRegionCode(region: string): 'S' | 'B' {
+  if (region.includes('부산') || region === 'B') return 'B'
+  return 'S'
+}
+
+export function toReportTypeCd(type: string): 'MRC010' | 'MRC020' {
+  if (type.includes('특강') || type === 'MRC020') return 'MRC020'
+  return 'MRC010'
+}
+
 export function buildReportPayload(options: {
   menteeRegion: 'S' | 'B'
   reportType: 'MRC010' | 'MRC020'

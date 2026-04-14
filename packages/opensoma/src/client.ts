@@ -15,6 +15,8 @@ import {
   buildRoomReservationPayload,
   parseEventDetail,
   resolveRoomId,
+  toRegionCode,
+  toReportTypeCd,
 } from './shared/utils/swmaestro'
 import type {
   ApplicationHistoryItem,
@@ -332,24 +334,25 @@ export class SomaClient {
       },
       update: async (id, options, file, fileName) => {
         await this.requireAuth()
+        const existing = await this.report.get(id)
         const payload = buildReportPayload({
-          menteeRegion: options.menteeRegion ?? 'S',
-          reportType: options.reportType ?? 'MRC010',
-          progressDate: options.progressDate ?? '',
-          teamNames: options.teamNames,
-          venue: options.venue ?? '',
-          attendanceCount: options.attendanceCount ?? 0,
-          attendanceNames: options.attendanceNames ?? '',
-          progressStartTime: options.progressStartTime ?? '',
-          progressEndTime: options.progressEndTime ?? '',
-          exceptStartTime: options.exceptStartTime,
-          exceptEndTime: options.exceptEndTime,
-          exceptReason: options.exceptReason,
-          subject: options.subject ?? '',
-          content: options.content ?? '',
-          mentorOpinion: options.mentorOpinion,
-          nonAttendanceNames: options.nonAttendanceNames,
-          etc: options.etc,
+          menteeRegion: options.menteeRegion ?? toRegionCode(existing.menteeRegion),
+          reportType: options.reportType ?? toReportTypeCd(existing.reportType),
+          progressDate: options.progressDate ?? existing.progressDate,
+          teamNames: options.teamNames ?? existing.teamNames,
+          venue: options.venue ?? existing.venue,
+          attendanceCount: options.attendanceCount ?? existing.attendanceCount,
+          attendanceNames: options.attendanceNames ?? existing.attendanceNames,
+          progressStartTime: options.progressStartTime ?? existing.progressStartTime,
+          progressEndTime: options.progressEndTime ?? existing.progressEndTime,
+          exceptStartTime: options.exceptStartTime ?? existing.exceptStartTime,
+          exceptEndTime: options.exceptEndTime ?? existing.exceptEndTime,
+          exceptReason: options.exceptReason ?? existing.exceptReason,
+          subject: options.subject ?? existing.subject,
+          content: options.content ?? existing.content,
+          mentorOpinion: options.mentorOpinion ?? existing.mentorOpinion,
+          nonAttendanceNames: options.nonAttendanceNames ?? existing.nonAttendanceNames,
+          etc: options.etc ?? existing.etc,
           reportId: id,
         })
         const formData = new FormData()
