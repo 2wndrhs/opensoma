@@ -34,9 +34,18 @@ export const MentoringListItemSchema = z.object({
 })
 export type MentoringListItem = z.infer<typeof MentoringListItemSchema>
 
+export const MentoringApplicantSchema = z.object({
+  name: z.string(),
+  appliedAt: z.string(),
+  cancelledAt: z.string(),
+  status: z.string(),
+})
+export type MentoringApplicant = z.infer<typeof MentoringApplicantSchema>
+
 export const MentoringDetailSchema = MentoringListItemSchema.extend({
   content: z.string(),
   venue: z.string(),
+  applicants: z.array(MentoringApplicantSchema),
 })
 export type MentoringDetail = z.infer<typeof MentoringDetailSchema>
 

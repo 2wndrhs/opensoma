@@ -65,6 +65,19 @@ export function parseMentoringDetail(html: string, id = 0): MentoringDetail {
     root.querySelector('.view-content') ??
     root.querySelector('.content-body') ??
     root.querySelector('#contents')
+  const applicantTable = root.querySelectorAll('table').find((table) => {
+    const headers = table.querySelectorAll('thead th')
+    return headers.length === 5 && cleanText(headers[1]) === '연수생'
+  })
+  const applicants = (applicantTable?.querySelectorAll('tbody tr') ?? [])
+    .map((row) => row.querySelectorAll('td'))
+    .filter((cells) => cells.length === 5)
+    .map((cells) => ({
+      name: cleanText(cells[1]),
+      appliedAt: cleanText(cells[2]),
+      cancelledAt: cleanText(cells[3]),
+      status: stripWrappingBrackets(cleanText(cells[4])),
+    }))
 
   return MentoringDetailSchema.parse({
     id: id || extractNumber(root.querySelector('[name="qustnrSn"]')?.getAttribute('value') ?? ''),
@@ -87,6 +100,7 @@ export function parseMentoringDetail(html: string, id = 0): MentoringDetail {
     createdAt: labels['등록일'] || '',
     content: contentNode?.innerHTML.trim() ?? '',
     venue: labels['장소'] || '',
+    applicants,
   })
 }
 

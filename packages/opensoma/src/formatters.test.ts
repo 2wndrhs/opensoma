@@ -90,7 +90,80 @@ describe('formatters', () => {
       createdAt: '2026.04.01',
       content: '<p>세션 본문</p>',
       venue: '온라인(Webex)',
+      applicants: [],
     })
+  })
+
+  test('parseMentoringDetail parses applicant list table', () => {
+    const html = `
+      <div class="group"><strong class="t">모집 명</strong><div class="c">[자유 멘토링] 테스트 멘토링</div></div>
+      <div class="group"><strong class="t">접수 기간</strong><div class="c">2026.04.01 ~ 2026.04.10</div></div>
+      <div class="group"><strong class="t">강의날짜</strong><div class="c"><span>2026.04.11 14:00시 ~ 15:30시</span></div></div>
+      <div class="group"><strong class="t">모집인원</strong><div class="c">10명</div></div>
+      <div class="group"><strong class="t">작성자</strong><div class="c">전수열</div></div>
+      <div class="group"><strong class="t">등록일</strong><div class="c">2026.04.01</div></div>
+      <div class="cont"><p>내용</p></div>
+      <div class="total-normal mt50">신청자 리스트 [<strong class="color-blue">2 명</strong>]</div>
+      <table>
+        <thead>
+          <tr><th>NO.</th><th>연수생</th><th>신청일</th><th>취소일</th><th>상태</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>2</td>
+            <td class="popuser"><a href="javascript: popuser('...')">김태균</a></td>
+            <td>2026.04.10 11:14</td>
+            <td>-</td>
+            <td><span class="color-blue">[신청완료]</span></td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td class="popuser"><a href="javascript: popuser('...')">이민호</a></td>
+            <td>2026.04.09 09:30</td>
+            <td>2026.04.10 14:22</td>
+            <td><span class="color-red">[신청취소]</span></td>
+          </tr>
+        </tbody>
+      </table>
+    `
+    const result = parseMentoringDetail(html, 1234)
+    expect(result.applicants).toEqual([
+      { name: '김태균', appliedAt: '2026.04.10 11:14', cancelledAt: '-', status: '신청완료' },
+      { name: '이민호', appliedAt: '2026.04.09 09:30', cancelledAt: '2026.04.10 14:22', status: '신청취소' },
+    ])
+  })
+
+  test('parseMentoringDetail returns empty applicants when no applicant table exists', () => {
+    const html = `
+      <div class="group"><strong class="t">모집 명</strong><div class="c">[자유 멘토링] 빈 멘토링</div></div>
+      <div class="group"><strong class="t">접수 기간</strong><div class="c">2026.04.01 ~ 2026.04.10</div></div>
+      <div class="group"><strong class="t">강의날짜</strong><div class="c"><span>2026.04.11 14:00시 ~ 15:30시</span></div></div>
+      <div class="group"><strong class="t">모집인원</strong><div class="c">5명</div></div>
+      <div class="group"><strong class="t">작성자</strong><div class="c">전수열</div></div>
+      <div class="group"><strong class="t">등록일</strong><div class="c">2026.04.01</div></div>
+      <div class="cont"><p>내용</p></div>
+    `
+    expect(parseMentoringDetail(html, 5678).applicants).toEqual([])
+  })
+
+  test('parseMentoringDetail ignores unrelated 5-column tables in content', () => {
+    const html = `
+      <div class="group"><strong class="t">모집 명</strong><div class="c">[자유 멘토링] 콘텐츠 테이블 멘토링</div></div>
+      <div class="group"><strong class="t">접수 기간</strong><div class="c">2026.04.01 ~ 2026.04.10</div></div>
+      <div class="group"><strong class="t">강의날짜</strong><div class="c"><span>2026.04.11 14:00시 ~ 15:30시</span></div></div>
+      <div class="group"><strong class="t">모집인원</strong><div class="c">5명</div></div>
+      <div class="group"><strong class="t">작성자</strong><div class="c">전수열</div></div>
+      <div class="group"><strong class="t">등록일</strong><div class="c">2026.04.01</div></div>
+      <div class="cont">
+        <table>
+          <thead><tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>data</td><td>data</td><td>data</td><td>data</td></tr>
+          </tbody>
+        </table>
+      </div>
+    `
+    expect(parseMentoringDetail(html, 9999).applicants).toEqual([])
   })
 
   test('parseRoomList parses real room cards with embedded time slots', () => {

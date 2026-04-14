@@ -52,6 +52,7 @@ describe('schemas', () => {
         createdAt: '2026-04-01',
         content: '<p>내용</p>',
         venue: '온라인(Webex)',
+        applicants: [],
       }),
     ).toBeDefined()
 
