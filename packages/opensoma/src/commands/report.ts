@@ -46,6 +46,28 @@ type CreateOptions = {
   pretty?: boolean
 }
 
+type UpdateOptions = {
+  region?: string
+  type?: string
+  date?: string
+  team?: string
+  venue?: string
+  attendanceCount?: string
+  attendanceNames?: string
+  startTime?: string
+  endTime?: string
+  exceptStart?: string
+  exceptEnd?: string
+  exceptReason?: string
+  subject?: string
+  content?: string
+  mentorOpinion?: string
+  nonAttendance?: string
+  etc?: string
+  file?: string
+  pretty?: boolean
+}
+
 async function listAction(options: ListOptions): Promise<void> {
   try {
     const http = await getHttpOrExit()
@@ -143,6 +165,50 @@ async function createAction(options: CreateOptions): Promise<void> {
   }
 }
 
+async function updateAction(id: string, options: UpdateOptions): Promise<void> {
+  try {
+    const http = await getHttpOrExit()
+    const payload = buildReportPayload({
+      menteeRegion: (options.region as 'S' | 'B') ?? 'S',
+      reportType: (options.type as 'MRC010' | 'MRC020') ?? 'MRC010',
+      progressDate: options.date ?? '',
+      teamNames: options.team,
+      venue: options.venue ?? '',
+      attendanceCount: options.attendanceCount ? Number.parseInt(options.attendanceCount, 10) : 0,
+      attendanceNames: options.attendanceNames ?? '',
+      progressStartTime: options.startTime ?? '',
+      progressEndTime: options.endTime ?? '',
+      exceptStartTime: options.exceptStart,
+      exceptEndTime: options.exceptEnd,
+      exceptReason: options.exceptReason,
+      subject: options.subject ?? '',
+      content: options.content ?? '',
+      mentorOpinion: options.mentorOpinion,
+      nonAttendanceNames: options.nonAttendance,
+      etc: options.etc,
+      reportId: Number.parseInt(id, 10),
+    })
+
+    const formData = new FormData()
+    for (const [key, value] of Object.entries(payload)) {
+      formData.append(key, value)
+    }
+
+    if (options.file) {
+      const fileBuffer = await readFile(options.file)
+      const fileName = options.file.split('/').pop() ?? 'file'
+      formData.append('file_1_1', new Blob([fileBuffer]), fileName)
+      formData.append('fileFieldNm_1', 'file_1')
+      formData.append('atchFileId', '')
+    }
+
+    await http.postMultipart('/mypage/mentoringReport/update.do', formData)
+    console.log(formatOutput({ ok: true }, options.pretty))
+  } catch (error) {
+    handleError(error)
+  }
+}
+
 export const reportCommand = new Command('report')
   .description('Browse mentoring reports and approvals')
   .addCommand(
@@ -184,6 +250,31 @@ export const reportCommand = new Command('report')
       .requiredOption('--file <path>', 'Evidence file path (required)')
       .option('--pretty', 'Pretty print JSON output')
       .action(createAction),
+  )
+  .addCommand(
+    new Command('update')
+      .description('Update an existing mentoring report')
+      .argument('<id>', 'Report ID to update')
+      .option('--region <S|B>', 'Mentee region (S=Seoul, B=Busan)')
+      .option('--type <MRC010|MRC020>', 'Report type (MRC010=자유 멘토링, MRC020=멘토 특강)')
+      .option('--date <yyyy-mm-dd>', 'Session date')
+      .option('--team <names>', 'Team names (comma-separated)')
+      .option('--venue <venue>', 'Venue name or code')
+      .option('--attendance-count <n>', 'Number of attendees')
+      .option('--attendance-names <names>', 'Attendee names (comma-separated)')
+      .option('--start-time <HH:mm>', 'Session start time')
+      .option('--end-time <HH:mm>', 'Session end time')
+      .option('--except-start <HH:mm>', 'Break start time')
+      .option('--except-end <HH:mm>', 'Break end time')
+      .option('--except-reason <text>', 'Break reason')
+      .option('--subject <text>', 'Session subject (min 10 chars)')
+      .option('--content <text>', 'Session content (min 100 chars)')
+      .option('--mentor-opinion <text>', 'Mentor opinion')
+      .option('--non-attendance <names>', 'Non-attendance names (comma-separated)')
+      .option('--etc <text>', 'Additional notes')
+      .option('--file <path>', 'Evidence file path (replaces existing)')
+      .option('--pretty', 'Pretty print JSON output')
+      .action(updateAction),
   )
   .addCommand(
     new Command('approval')

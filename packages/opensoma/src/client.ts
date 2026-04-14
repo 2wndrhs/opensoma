@@ -30,6 +30,7 @@ import type {
   ReportCreateOptions,
   ReportDetail,
   ReportListItem,
+  ReportUpdateOptions,
   RoomCard,
   TeamInfo,
 } from './types'
@@ -103,6 +104,12 @@ export class SomaClient {
     }): Promise<{ items: ReportListItem[]; pagination: Pagination }>
     get(id: number): Promise<ReportDetail>
     create(options: ReportCreateOptions, file: Buffer | string, fileName?: string): Promise<void>
+    update(
+      id: number,
+      options: Omit<ReportUpdateOptions, 'id'>,
+      file?: Buffer | string,
+      fileName?: string,
+    ): Promise<void>
     approval(options?: {
       page?: number
       month?: string
@@ -322,6 +329,43 @@ export class SomaClient {
         formData.append('fileFieldNm_1', 'file_1')
         formData.append('atchFileId', '')
         await this.http.postMultipart('/mypage/mentoringReport/insert.do', formData)
+      },
+      update: async (id, options, file, fileName) => {
+        await this.requireAuth()
+        const payload = buildReportPayload({
+          menteeRegion: options.menteeRegion ?? 'S',
+          reportType: options.reportType ?? 'MRC010',
+          progressDate: options.progressDate ?? '',
+          teamNames: options.teamNames,
+          venue: options.venue ?? '',
+          attendanceCount: options.attendanceCount ?? 0,
+          attendanceNames: options.attendanceNames ?? '',
+          progressStartTime: options.progressStartTime ?? '',
+          progressEndTime: options.progressEndTime ?? '',
+          exceptStartTime: options.exceptStartTime,
+          exceptEndTime: options.exceptEndTime,
+          exceptReason: options.exceptReason,
+          subject: options.subject ?? '',
+          content: options.content ?? '',
+          mentorOpinion: options.mentorOpinion,
+          nonAttendanceNames: options.nonAttendanceNames,
+          etc: options.etc,
+          reportId: id,
+        })
+        const formData = new FormData()
+        for (const [key, value] of Object.entries(payload)) {
+          formData.append(key, value)
+        }
+        if (file) {
+          const isBuffer = Buffer.isBuffer(file)
+          const fileBuffer = isBuffer ? file : await readFile(file)
+          const resolvedFileName = isBuffer ? (fileName ?? 'file') : (file.split('/').pop() ?? 'file')
+          const uint8Array = new Uint8Array(fileBuffer.buffer, fileBuffer.byteOffset, fileBuffer.byteLength)
+          formData.append('file_1_1', new Blob([uint8Array as unknown as ArrayBuffer]), resolvedFileName)
+          formData.append('fileFieldNm_1', 'file_1')
+          formData.append('atchFileId', '')
+        }
+        await this.http.postMultipart('/mypage/mentoringReport/update.do', formData)
       },
       approval: async (options) => {
         await this.requireAuth()

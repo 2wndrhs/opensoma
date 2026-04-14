@@ -1,7 +1,7 @@
 import { parse } from 'node-html-parser'
 
 import { MENU_NO, REPORT_CD, ROOM_IDS, TIME_SLOTS } from '../../constants'
-import { ApplicationHistoryItemSchema, type ApplicationHistoryItem } from '../../types'
+import { type ApplicationHistoryItem, ApplicationHistoryItemSchema } from '../../types'
 
 export function toReportCd(type: 'public' | 'lecture'): string {
   return type === 'lecture' ? REPORT_CD.MENTOR_LECTURE : REPORT_CD.PUBLIC_MENTORING
@@ -178,10 +178,8 @@ export function parseEventDetail(html: string): Record<string, unknown> {
     root.querySelector('.content-body')
 
   return {
-    id: extractNumber(
-      labels.NO ?? labels['번호'] ?? root.querySelector('[name="bbsId"]')?.getAttribute('value') ?? '0',
-    ),
-    title: labels['제목'] ?? cleanText(root.querySelector('h1, h2, .title')?.text),
+    id: extractNumber(labels.NO ?? labels.번호 ?? root.querySelector('[name="bbsId"]')?.getAttribute('value') ?? '0'),
+    title: labels.제목 ?? cleanText(root.querySelector('h1, h2, .title')?.text),
     content: contentNode?.innerHTML.trim() ?? '',
     fields: labels,
   }
@@ -236,6 +234,7 @@ export function buildReportPayload(options: {
   nonAttendanceNames?: string
   etc?: string
   menuNo?: string
+  reportId?: number
 }): Record<string, string> {
   const { progressDate, reportType } = options
   const [year, month, day] = progressDate.split('-')
@@ -266,5 +265,6 @@ export function buildReportPayload(options: {
     nonAttendanceNms: options.nonAttendanceNames ?? '',
     etc: options.etc ?? '',
     nttSj,
+    ...(options.reportId !== undefined ? { reportId: String(options.reportId) } : {}),
   }
 }
