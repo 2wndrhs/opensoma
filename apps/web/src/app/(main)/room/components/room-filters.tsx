@@ -6,6 +6,7 @@ import { useState } from 'react'
 
 import { Button } from '@/ui/button'
 import { Checkbox } from '@/ui/checkbox'
+import { DatePicker } from '@/ui/date-picker'
 import { Separator } from '@/ui/separator'
 
 const aRooms = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8']
@@ -79,11 +80,10 @@ export function RoomFilters({ date, rooms }: RoomFiltersProps) {
             >
               <CaretLeft size={16} weight="bold" />
             </Button>
-            <input
-              type="date"
+            <DatePicker
               value={selectedDate}
-              onChange={(event) => handleDateChange(event.target.value)}
-              className="h-9 border-none bg-transparent px-3 py-2 text-sm text-foreground outline-none"
+              onValueChange={handleDateChange}
+              className="h-9 rounded-none border-none bg-transparent shadow-none"
             />
             <Button
               variant="ghost"

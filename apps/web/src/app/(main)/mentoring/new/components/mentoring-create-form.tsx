@@ -18,6 +18,7 @@ import { Button } from '@/ui/button'
 import { Card, CardContent, CardHeader } from '@/ui/card'
 import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from '@/ui/collapsible'
 import { Field, FieldDescription, FieldLabel } from '@/ui/field'
+import { DatePicker } from '@/ui/date-picker'
 import { Input } from '@/ui/input'
 import { RadioGroup, RadioItem } from '@/ui/radio-group'
 import { Select, SelectGroup, SelectItem, SelectPopup, SelectTrigger } from '@/ui/select'
@@ -273,7 +274,7 @@ export function MentoringCreateForm({
                   <div className="grid gap-6 md:grid-cols-2">
                     <Field name="manualDate">
                       <FieldLabel>진행 날짜</FieldLabel>
-                      <Input type="date" value={manualDate} onChange={(e) => setManualDate(e.target.value)} />
+                      <DatePicker value={manualDate} onValueChange={setManualDate} placeholder="날짜를 선택하세요" />
                     </Field>
                     <Field name="manualVenue">
                       <FieldLabel>장소</FieldLabel>
@@ -345,11 +346,11 @@ export function MentoringCreateForm({
               </Field>
               <Field name="regStart">
                 <FieldLabel>접수 시작일</FieldLabel>
-                <Input name="regStart" type="date" />
+                <DatePicker name="regStart" placeholder="접수 시작일" />
               </Field>
               <Field name="regEnd">
                 <FieldLabel>접수 종료일</FieldLabel>
-                <Input name="regEnd" type="date" />
+                <DatePicker name="regEnd" placeholder="접수 종료일" />
               </Field>
             </div>
 

@@ -7,8 +7,8 @@ import { cn } from '@/lib/cn'
 import { Button } from '@/ui/button'
 import { Card, CardContent, CardHeader } from '@/ui/card'
 import { EmptyState } from '@/ui/empty-state'
+import { DatePicker } from '@/ui/date-picker'
 import { Field, FieldLabel } from '@/ui/field'
-import { Input } from '@/ui/input'
 
 export interface RoomReservation {
   title: string
@@ -102,12 +102,7 @@ export function ExistingReservationSelector({ reservations, onSelect }: Existing
     <div className="space-y-4">
       <Field name="filter-date">
         <FieldLabel>날짜 필터</FieldLabel>
-        <Input
-          type="date"
-          value={filterDate}
-          onChange={(e) => setFilterDate(e.target.value)}
-          placeholder="날짜로 필터링"
-        />
+        <DatePicker value={filterDate} onValueChange={setFilterDate} placeholder="날짜로 필터링" />
       </Field>
 
       {filterDate && (

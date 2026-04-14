@@ -11,7 +11,7 @@ import { Button } from '@/ui/button'
 import { Card, CardContent } from '@/ui/card'
 import { EmptyState } from '@/ui/empty-state'
 import { Field, FieldLabel } from '@/ui/field'
-import { Input } from '@/ui/input'
+import { DatePicker } from '@/ui/date-picker'
 import { Select, SelectGroup, SelectItem, SelectPopup, SelectTrigger } from '@/ui/select'
 
 const roomOptions = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'M1', 'M2']
@@ -115,7 +115,7 @@ export function MentoringRoomTimeline({
       <div className="grid gap-4 rounded-lg border border-border bg-surface p-4 md:grid-cols-[1fr_1fr_auto]">
         <Field name="timeline-date">
           <FieldLabel>예약 날짜</FieldLabel>
-          <Input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+          <DatePicker value={date} onValueChange={setDate} placeholder="날짜를 선택하세요" />
         </Field>
         <Field name="timeline-room">
           <FieldLabel>회의실</FieldLabel>

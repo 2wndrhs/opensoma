@@ -7,6 +7,7 @@ import { RichTextEditor } from '@/components/rich-text-editor/editor'
 import { Button } from '@/ui/button'
 import { Card, CardContent, CardHeader } from '@/ui/card'
 import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from '@/ui/collapsible'
+import { DatePicker } from '@/ui/date-picker'
 import { Field, FieldDescription, FieldLabel } from '@/ui/field'
 import { Input } from '@/ui/input'
 import { RadioGroup, RadioItem } from '@/ui/radio-group'
@@ -121,12 +122,7 @@ export function ReportCreateForm() {
             <div className="grid gap-6 md:grid-cols-2">
               <Field name="progressDate">
                 <FieldLabel>진행일</FieldLabel>
-                <Input
-                  name="progressDate"
-                  type="date"
-                  value={progressDate}
-                  onChange={(e) => setProgressDate(e.target.value)}
-                />
+                <DatePicker name="progressDate" value={progressDate} onValueChange={setProgressDate} placeholder="날짜를 선택하세요" />
               </Field>
 
               <Field name="venue">
