@@ -139,3 +139,72 @@ export const CredentialsSchema = z.object({
   loggedInAt: z.string().optional(),
 })
 export type Credentials = z.infer<typeof CredentialsSchema>
+
+export const ReportListItemSchema = z.object({
+  id: z.number(),
+  category: z.string(),
+  title: z.string(),
+  progressDate: z.string(),
+  status: z.string(),
+  author: z.string(),
+  createdAt: z.string(),
+  acceptedTime: z.string(),
+  payAmount: z.string(),
+})
+export type ReportListItem = z.infer<typeof ReportListItemSchema>
+
+export const ReportDetailSchema = ReportListItemSchema.extend({
+  content: z.string(),
+  subject: z.string(),
+  menteeRegion: z.string(),
+  reportType: z.string(),
+  teamNames: z.string(),
+  venue: z.string(),
+  attendanceCount: z.number(),
+  attendanceNames: z.string(),
+  progressStartTime: z.string(),
+  progressEndTime: z.string(),
+  exceptStartTime: z.string(),
+  exceptEndTime: z.string(),
+  exceptReason: z.string(),
+  mentorOpinion: z.string(),
+  nonAttendanceNames: z.string(),
+  etc: z.string(),
+  files: z.array(z.string()),
+})
+export type ReportDetail = z.infer<typeof ReportDetailSchema>
+
+export const ApprovalListItemSchema = z.object({
+  id: z.number(),
+  category: z.string(),
+  title: z.string(),
+  progressDate: z.string(),
+  status: z.string(),
+  author: z.string(),
+  createdAt: z.string(),
+  acceptedTime: z.string(),
+  travelExpense: z.string(),
+  mentoringAllowance: z.string(),
+})
+export type ApprovalListItem = z.infer<typeof ApprovalListItemSchema>
+
+export const ReportCreateOptionsSchema = z.object({
+  menteeRegion: z.enum(['S', 'B']),
+  reportType: z.enum(['MRC010', 'MRC020']),
+  progressDate: z.string(),
+  teamNames: z.string().optional(),
+  venue: z.string(),
+  attendanceCount: z.number(),
+  attendanceNames: z.string(),
+  progressStartTime: z.string(),
+  progressEndTime: z.string(),
+  exceptStartTime: z.string().optional(),
+  exceptEndTime: z.string().optional(),
+  exceptReason: z.string().optional(),
+  subject: z.string().min(10),
+  content: z.string().min(100),
+  mentorOpinion: z.string().optional(),
+  nonAttendanceNames: z.string().optional(),
+  etc: z.string().optional(),
+})
+export type ReportCreateOptions = z.infer<typeof ReportCreateOptionsSchema>

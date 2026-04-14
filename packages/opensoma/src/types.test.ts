@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import {
   ApplicationHistoryItemSchema,
+  ApprovalListItemSchema,
   CredentialsSchema,
   DashboardSchema,
   EventListItemSchema,
@@ -11,6 +12,8 @@ import {
   NoticeDetailSchema,
   NoticeListItemSchema,
   PaginationSchema,
+  ReportCreateOptionsSchema,
+  ReportListItemSchema,
   RoomCardSchema,
   TeamInfoSchema,
 } from './types'
@@ -153,6 +156,50 @@ describe('schemas', () => {
         loggedInAt: '2026-04-09T00:00:00.000Z',
       }),
     ).toBeDefined()
+
+    expect(
+      ReportListItemSchema.parse({
+        id: 1,
+        category: '멘토링',
+        title: 'AI 멘토링 보고서',
+        progressDate: '2026-04-10',
+        status: '승인완료',
+        author: '전수열',
+        createdAt: '2026-04-11',
+        acceptedTime: '2시간',
+        payAmount: '100000',
+      }),
+    ).toBeDefined()
+
+    expect(
+      ApprovalListItemSchema.parse({
+        id: 1,
+        category: '멘토링',
+        title: 'AI 멘토링 보고서',
+        progressDate: '2026-04-10',
+        status: '승인완료',
+        author: '전수열',
+        createdAt: '2026-04-11',
+        acceptedTime: '2시간',
+        travelExpense: '50000',
+        mentoringAllowance: '100000',
+      }),
+    ).toBeDefined()
+
+    expect(
+      ReportCreateOptionsSchema.parse({
+        menteeRegion: 'S',
+        reportType: 'MRC010',
+        progressDate: '2026-04-10',
+        venue: '스페이스 A1',
+        attendanceCount: 4,
+        attendanceNames: '김개발, 박코딩, 이알고, 최리즘',
+        progressStartTime: '14:00',
+        progressEndTime: '16:00',
+        subject: 'AI 멘토링 진행 보고',
+        content: '이번 멘토링에서는 AI 기술의 기초 개념과 실제 적용 사례에 대해 다루었습니다. 참가자들은 머신러닝의 기본 원리와 딥러닝의 구조에 대해 학습하고, 실습을 통해 모델을 구현해보았습니다.',
+      }),
+    ).toBeDefined()
   })
 
   test('reject invalid values', () => {
@@ -170,5 +217,20 @@ describe('schemas', () => {
     expect(() => ApplicationHistoryItemSchema.parse({ id: 1, status: '신청완료' })).toThrow()
     expect(() => PaginationSchema.parse({ total: '23', currentPage: 2, totalPages: 3 })).toThrow()
     expect(() => CredentialsSchema.parse({ sessionCookie: 'cookie' })).toThrow()
+    expect(() => ReportListItemSchema.parse({ id: 1, category: '멘토링' })).toThrow()
+    expect(() =>
+      ReportCreateOptionsSchema.parse({
+        menteeRegion: 'S',
+        reportType: 'MRC010',
+        progressDate: '2026-04-10',
+        venue: '스페이스 A1',
+        attendanceCount: 4,
+        attendanceNames: '김개발',
+        progressStartTime: '14:00',
+        progressEndTime: '16:00',
+        subject: '짧음',
+        content: '짧은 내용',
+      }),
+    ).toThrow()
   })
 })

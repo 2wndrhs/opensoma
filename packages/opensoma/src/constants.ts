@@ -10,6 +10,8 @@ export const MENU_NO = {
   APPLICATION_HISTORY: '200047',
   ROOM: '200058',
   MEMBER_INFO: '200036',
+  REPORT: '200049',
+  REPORT_APPROVAL: '200073',
 } as const
 
 export const ROOM_IDS: Record<string, number> = {
