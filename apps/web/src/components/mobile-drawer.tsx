@@ -98,6 +98,7 @@ export function MobileDrawer({ username }: MobileDrawerProps) {
                 key={item.href}
                 ref={index === 0 ? firstNavItemRef : undefined}
                 href={item.href}
+                prefetch={false}
                 className={cn(
                   'flex items-center gap-2.5 overflow-hidden rounded-lg px-3 py-2 text-sm font-semibold transition-colors focus:outline-none',
                   isActive

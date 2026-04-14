@@ -65,7 +65,7 @@ export function Sidebar({ username }: SidebarProps) {
 
             if (!isSidebarCollapsed) {
               return (
-                <Link key={item.href} href={item.href} className={linkClassName}>
+                <Link key={item.href} href={item.href} prefetch={false} className={linkClassName}>
                   <IconComponent size={18} weight={isActive ? 'fill' : 'regular'} />
                   <span className={labelClassName}>{item.label}</span>
                 </Link>
@@ -76,7 +76,7 @@ export function Sidebar({ username }: SidebarProps) {
               <Tooltip.Root key={item.href}>
                 <Tooltip.Trigger
                   render={
-                    <Link href={item.href} className={linkClassName} aria-label={item.label}>
+                    <Link href={item.href} prefetch={false} className={linkClassName} aria-label={item.label}>
                       <IconComponent size={18} weight={isActive ? 'fill' : 'regular'} />
                       <span className={labelClassName}>{item.label}</span>
                     </Link>
