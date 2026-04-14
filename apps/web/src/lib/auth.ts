@@ -19,7 +19,17 @@ function wrapWithAuthGuard(client: SomaClient): SomaClient {
               return await (method as (...a: unknown[]) => Promise<unknown>).apply(nsTarget, args)
             } catch (error) {
               if (error instanceof AuthenticationError) {
-                const recoveredMethod = await recoverClientMethod(prop, nsProp)
+                let recoveredMethod: ((...args: unknown[]) => Promise<unknown>) | null = null
+                try {
+                  recoveredMethod = await recoverClientMethod(prop, nsProp)
+                } catch (recoveryError) {
+                  if (recoveryError instanceof AuthenticationError) {
+                    redirect('/logout')
+                  }
+
+                  throw recoveryError
+                }
+
                 if (recoveredMethod) {
                   try {
                     return await recoveredMethod(...args)
