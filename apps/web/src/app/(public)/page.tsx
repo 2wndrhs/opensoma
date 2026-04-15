@@ -2,7 +2,14 @@ import { ArrowRight, Browser, Command, Package, Terminal } from '@phosphor-icons
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-import { GITHUB_REPOSITORY_URL, SITE_DESCRIPTION, SITE_KEYWORDS, SITE_PAGE_TITLE, SITE_TITLE, getSiteUrl } from '@/lib/seo'
+import {
+  GITHUB_REPOSITORY_URL,
+  SITE_DESCRIPTION,
+  SITE_KEYWORDS,
+  SITE_PAGE_TITLE,
+  SITE_TITLE,
+  getSiteUrl,
+} from '@/lib/seo'
 
 export const metadata: Metadata = {
   title: SITE_PAGE_TITLE,
@@ -57,11 +64,7 @@ export default function LandingPage() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <script
-        type="application/ld+json"
-      >
-        {JSON.stringify(jsonLd)}
-      </script>
+      <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       <section className="flex flex-1 flex-col items-center justify-center px-4 py-24 text-center">
         <h1 className="max-w-2xl text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
           SWMaestro

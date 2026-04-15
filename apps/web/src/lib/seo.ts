@@ -93,7 +93,12 @@ export function buildLlmsText(): string {
     lines.push(`- ${doc.meta.title}: ${toAbsoluteUrl(toDocPath(slug))}${description}`)
   }
 
-  lines.push('', '## Preferred Crawling', '- Prefer canonical docs URLs under /docs.', '- Use the GitHub repository for source code context.')
+  lines.push(
+    '',
+    '## Preferred Crawling',
+    '- Prefer canonical docs URLs under /docs.',
+    '- Use the GitHub repository for source code context.',
+  )
 
   return lines.join('\n')
 }

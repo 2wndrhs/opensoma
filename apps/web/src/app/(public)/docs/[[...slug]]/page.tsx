@@ -75,11 +75,7 @@ export default async function DocPage({ params }: PageProps) {
 
   return (
     <div className="flex gap-8">
-      <script
-        type="application/ld+json"
-      >
-        {JSON.stringify(jsonLd)}
-      </script>
+      <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       <article className="docs-prose min-w-0 flex-1">
         <h1>{doc.meta.title}</h1>
         {doc.meta.description && <p className="lead">{doc.meta.description}</p>}
