@@ -129,19 +129,19 @@ If a memorized ID returns an error (room not found, session invalid), remove it 
 
 ## User Profile
 
-- Name: 전수열
+- Name: 홍길동
 - Role: 멘토
-- Organization: Indent
+- Organization: Acme Corp
 - Position: CTO
 
 ## Team Details
 
-- Team Name: 김앤강
-- Members: 김철수, 강영희
+- Team Name: 팀이름
+- Members: 김멘티, 이멘티
 
 ## Room Registry
 
-- A1 (17): 4인실, 전수열 멘토가 선호하는 회의실
+- A1 (17): 4인실, 홍길동 멘토가 선호하는 회의실
 - A5 (21): 4인실
 
 ## Aliases
@@ -200,6 +200,10 @@ Comprehensive management of mentoring sessions, from discovery to application.
 #   "author:@me"      → my sessions only
 #   "content:keyword" → content search
 # --page: Navigate through results (default: 1)
+#
+# Default filter by role (apply automatically unless user specifies otherwise):
+#   Mentor → --search "author:@me" (show my mentorings)
+#   Mentee → no filter (show all)
 opensoma mentoring list [--status <open|closed>] [--type <public|lecture>] [--search <query>] [--page <n>] [--pretty]
 
 # Retrieve full details for a specific mentoring session
