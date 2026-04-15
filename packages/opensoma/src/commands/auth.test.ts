@@ -2,6 +2,8 @@ import { describe, expect, test } from 'bun:test'
 
 import { inspectStoredAuthStatus, resolveExtractedCredentials } from './auth'
 
+const noBrowserExtraction = async () => null
+
 describe('resolveExtractedCredentials', () => {
   test('returns the first candidate that validates successfully', async () => {
     const calls: string[] = []
@@ -55,7 +57,7 @@ describe('resolveExtractedCredentials', () => {
 })
 
 describe('inspectStoredAuthStatus', () => {
-  test('clears stale credentials when the stored session is invalid', async () => {
+  test('clears stale credentials when both recovery methods fail', async () => {
     let removed = false
 
     const status = await inspectStoredAuthStatus(
@@ -75,6 +77,8 @@ describe('inspectStoredAuthStatus', () => {
       () => ({
         checkLogin: async () => null,
       }),
+      undefined,
+      noBrowserExtraction,
     )
 
     expect(status).toEqual({
@@ -119,6 +123,41 @@ describe('inspectStoredAuthStatus', () => {
       hint: 'Could not verify session. Try again or run: opensoma auth login or opensoma auth extract',
     })
     expect(removed).toBe(false)
+  })
+
+  test('recovers via browser extraction when no stored password is available', async () => {
+    let savedCredentials: Record<string, unknown> | null = null
+
+    const status = await inspectStoredAuthStatus(
+      {
+        getCredentials: async () => ({
+          sessionCookie: 'stale-session',
+          csrfToken: 'stale-csrf',
+        }),
+        setCredentials: async (credentials: Record<string, unknown>) => {
+          savedCredentials = credentials
+        },
+        remove: async () => {
+          throw new Error('should not remove when browser extraction succeeds')
+        },
+      },
+      () => ({
+        checkLogin: async () => null,
+      }),
+      undefined,
+      async () => ({ sessionCookie: 'browser-session', csrfToken: 'browser-csrf' }),
+    )
+
+    expect(status).toMatchObject({
+      authenticated: true,
+      valid: true,
+      username: null,
+    })
+    expect(savedCredentials).toMatchObject({
+      sessionCookie: 'browser-session',
+      csrfToken: 'browser-csrf',
+    })
+    expect(savedCredentials).toHaveProperty('loggedInAt')
   })
 
   test('refreshes the session automatically when encrypted login credentials are available', async () => {

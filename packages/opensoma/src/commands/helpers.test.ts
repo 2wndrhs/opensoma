@@ -2,6 +2,8 @@ import { describe, expect, test } from 'bun:test'
 
 import { createAuthenticatedHttp } from './helpers'
 
+const noBrowserExtraction = async () => null
+
 describe('createAuthenticatedHttp', () => {
   test('throws a login hint when no credentials are stored', async () => {
     const manager = {
@@ -14,7 +16,7 @@ describe('createAuthenticatedHttp', () => {
     )
   })
 
-  test('clears stale credentials when the stored session is invalid', async () => {
+  test('clears stale credentials when both recovery methods fail', async () => {
     let removed = false
     const manager = {
       getCredentials: async () => ({
@@ -30,9 +32,7 @@ describe('createAuthenticatedHttp', () => {
     }
 
     await expect(
-      createAuthenticatedHttp(manager, () => ({
-        checkLogin: async () => null,
-      })),
+      createAuthenticatedHttp(manager, () => ({ checkLogin: async () => null }), undefined, noBrowserExtraction),
     ).rejects.toThrow(
       'Session expired. Saved credentials were cleared. Run: opensoma auth login or opensoma auth extract',
     )
@@ -108,5 +108,109 @@ describe('createAuthenticatedHttp', () => {
       username: 'neo@example.com',
       password: 'secret',
     })
+  })
+
+  test('recovers via browser extraction when no stored password is available', async () => {
+    let savedCredentials: Record<string, unknown> | null = null
+    const manager = {
+      getCredentials: async () => ({
+        sessionCookie: 'stale-session',
+        csrfToken: 'stale-csrf',
+      }),
+      setCredentials: async (credentials: Record<string, unknown>) => {
+        savedCredentials = credentials
+      },
+      remove: async () => {
+        throw new Error('should not remove when browser extraction succeeds')
+      },
+    }
+    const recoveredHttp = {
+      checkLogin: async () => ({ userId: 'neo@example.com', userNm: 'Neo' }),
+    }
+
+    const result = await createAuthenticatedHttp(
+      manager,
+      (credentials) => {
+        if (credentials.sessionCookie === 'browser-session') return recoveredHttp
+        return { checkLogin: async () => null }
+      },
+      undefined,
+      async () => ({ sessionCookie: 'browser-session', csrfToken: 'browser-csrf' }),
+    )
+
+    expect(result).toBe(recoveredHttp)
+    expect(savedCredentials).toMatchObject({
+      sessionCookie: 'browser-session',
+      csrfToken: 'browser-csrf',
+    })
+    expect(savedCredentials).toHaveProperty('loggedInAt')
+  })
+
+  test('falls back to browser extraction when password re-login throws', async () => {
+    let savedCredentials: Record<string, unknown> | null = null
+    const manager = {
+      getCredentials: async () => ({
+        sessionCookie: 'stale-session',
+        csrfToken: 'stale-csrf',
+        username: 'neo@example.com',
+        password: 'wrong-password',
+      }),
+      setCredentials: async (credentials: Record<string, unknown>) => {
+        savedCredentials = credentials
+      },
+      remove: async () => {
+        throw new Error('should not remove when browser extraction succeeds')
+      },
+    }
+    const recoveredHttp = {
+      checkLogin: async () => ({ userId: 'neo@example.com', userNm: 'Neo' }),
+    }
+
+    const result = await createAuthenticatedHttp(
+      manager,
+      (credentials) => {
+        if (credentials.sessionCookie === 'browser-session') return recoveredHttp
+        return { checkLogin: async () => null }
+      },
+      () => ({
+        login: async () => {
+          throw new Error('wrong password')
+        },
+        checkLogin: async () => null,
+        getSessionCookie: () => null,
+        getCsrfToken: () => null,
+      }),
+      async () => ({ sessionCookie: 'browser-session', csrfToken: 'browser-csrf' }),
+    )
+
+    expect(result).toBe(recoveredHttp)
+    expect(savedCredentials).toMatchObject({
+      sessionCookie: 'browser-session',
+      csrfToken: 'browser-csrf',
+    })
+  })
+
+  test('does not attempt browser extraction when no credentials exist', async () => {
+    let browserExtractionCalled = false
+    const manager = {
+      getCredentials: async () => null,
+      setCredentials: async () => {
+        throw new Error('should not save')
+      },
+      remove: async () => {},
+    }
+
+    await expect(
+      createAuthenticatedHttp(
+        manager,
+        () => ({ checkLogin: async () => null }),
+        undefined,
+        async () => {
+          browserExtractionCalled = true
+          return { sessionCookie: 's', csrfToken: 'c' }
+        },
+      ),
+    ).rejects.toThrow('Not logged in')
+    expect(browserExtractionCalled).toBe(false)
   })
 })
