@@ -68,6 +68,16 @@ type ExtractedSessionValidator = Pick<SomaHttp, 'checkLogin' | 'extractCsrfToken
 type CredentialStore = Pick<CredentialManager, 'getCredentials' | 'remove' | 'setCredentials'>
 type StatusValidator = Pick<SomaHttp, 'checkLogin'>
 type ReloginHttp = Pick<SomaHttp, 'checkLogin' | 'getCsrfToken' | 'getSessionCookie' | 'login'>
+type BrowserExtractor = () => Promise<{ csrfToken: string; sessionCookie: string } | null>
+
+async function defaultExtractBrowserCredentials(): Promise<{ csrfToken: string; sessionCookie: string } | null> {
+  const { TokenExtractor } = (await import('../token-extractor')) as {
+    TokenExtractor: new () => { extractCandidates: () => Promise<ExtractedSessionCandidate[]> }
+  }
+  const candidates = await new TokenExtractor().extractCandidates()
+  if (candidates.length === 0) return null
+  return resolveExtractedCredentials(candidates)
+}
 
 const EXPIRED_SESSION_HINT = 'Session expired. Run: opensoma auth login or opensoma auth extract'
 const UNVERIFIED_SESSION_HINT =
@@ -172,6 +182,7 @@ export async function inspectStoredAuthStatus(
   createValidator: (credentials: { sessionCookie: string; csrfToken: string }) => StatusValidator = (credentials) =>
     new SomaHttp({ sessionCookie: credentials.sessionCookie, csrfToken: credentials.csrfToken }),
   createReloginHttp: () => ReloginHttp = () => new SomaHttp(),
+  recoverViaBrowser: BrowserExtractor = defaultExtractBrowserCredentials,
 ): Promise<Record<string, boolean | null | string>> {
   const creds = await manager.getCredentials()
   if (!creds) {
@@ -210,6 +221,21 @@ export async function inspectStoredAuthStatus(
         loggedInAt: creds.loggedInAt ?? null,
         hint: UNVERIFIED_SESSION_HINT,
       }
+    }
+
+    try {
+      const extracted = await recoverViaBrowser()
+      if (extracted) {
+        const loggedInAt = new Date().toISOString()
+        await manager.setCredentials({
+          sessionCookie: extracted.sessionCookie,
+          csrfToken: extracted.csrfToken,
+          loggedInAt,
+        })
+        return { authenticated: true, valid: true, username: null, loggedInAt }
+      }
+    } catch {
+      // Browser extraction failed — fall through to credential removal
     }
 
     await manager.remove()
