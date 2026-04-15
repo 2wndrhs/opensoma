@@ -2,14 +2,14 @@ import { type HTMLElement, parse } from 'node-html-parser'
 
 import { decodeHtmlEntities } from './shared/utils/html'
 import {
-  ApplicationHistoryItemSchema,
   type ApplicationHistoryItem,
-  ApprovalListItemSchema,
+  ApplicationHistoryItemSchema,
   type ApprovalListItem,
-  DashboardSchema,
-  EventListItemSchema,
+  ApprovalListItemSchema,
   type Dashboard,
+  DashboardSchema,
   type EventListItem,
+  EventListItemSchema,
   type MemberInfo,
   MemberInfoSchema,
   type MentoringDetail,
@@ -132,20 +132,7 @@ export function parseRoomSlots(html: string): RoomCard['timeSlots'] {
     return parseTimeSlotsFromRoot(root)
   }
 
-  return slots
-    .map((slot) => {
-      const hour = slot.getAttribute('data-hour') ?? ''
-      const minute = slot.getAttribute('data-minute') ?? ''
-      const checkbox = slot.querySelector('input[type="checkbox"]')
-      const className = slot.getAttribute('class') ?? ''
-      const time = hour && minute ? `${hour}:${minute}` : normalizeTime(cleanText(slot.querySelector('label') ?? slot))
-
-      return {
-        time,
-        available: !checkbox?.hasAttribute('disabled') && !className.includes('disabled'),
-      }
-    })
-    .filter((slot) => Boolean(slot.time))
+  return slots.map(parseRoomTimeSlot).filter((slot) => Boolean(slot.time))
 }
 
 export function parseDashboard(html: string): Dashboard {
@@ -465,15 +452,46 @@ function parseTimeSlotsFromRoot(root: HTMLElement): RoomCard['timeSlots'] {
     ? grid.querySelectorAll('span')
     : root.querySelectorAll('.time-grid span, [class*="time-slot"], .slot')
 
-  return spans
-    .map((slot) => ({
-      time: cleanText(slot),
-      available:
-        !(slot.getAttribute('class') ?? '').includes('not-reserve') &&
-        !(slot.getAttribute('class') ?? '').includes('booked') &&
-        !(slot.getAttribute('class') ?? '').includes('disabled'),
-    }))
-    .filter((slot) => Boolean(slot.time))
+  return spans.map(parseRoomTimeSlot).filter((slot) => Boolean(slot.time))
+}
+
+function parseRoomTimeSlot(slot: HTMLElement): RoomCard['timeSlots'][number] {
+  const label = slot.querySelector('label')
+  const hour = slot.getAttribute('data-hour') ?? ''
+  const minute = slot.getAttribute('data-minute') ?? ''
+  const checkbox = slot.querySelector('input[type="checkbox"]')
+  const className = slot.getAttribute('class') ?? ''
+  const available =
+    !checkbox?.hasAttribute('disabled') &&
+    !className.includes('not-reserve') &&
+    !className.includes('booked') &&
+    !className.includes('disabled')
+  const time = hour && minute ? `${hour}:${minute}` : normalizeTime(cleanText(label ?? slot))
+  const reservation = !available ? extractReservation(label) : undefined
+
+  return {
+    time,
+    available,
+    ...(reservation ? { reservation } : {}),
+  }
+}
+
+function extractReservation(label: HTMLElement | null): { title: string; bookedBy: string } | undefined {
+  const rawTitle = label?.getAttribute('title')
+  if (!rawTitle) {
+    return undefined
+  }
+
+  const [title = '', bookedByLine = ''] = decodeHtmlEntities(rawTitle)
+    .split(/<br\s*\/?>/i)
+    .map((part) => part.trim())
+  const bookedBy = bookedByLine.replace(/^예약자\s*:\s*/, '').trim()
+
+  if (!title || !bookedBy) {
+    return undefined
+  }
+
+  return { title, bookedBy }
 }
 
 function findDashboardValue(items: HTMLElement[], label: string): string {

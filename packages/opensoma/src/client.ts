@@ -81,7 +81,7 @@ export class SomaClient {
   }
 
   readonly room: {
-    list(options?: { date?: string; room?: string }): Promise<RoomCard[]>
+    list(options?: { date?: string; room?: string; includeMentoring?: boolean }): Promise<RoomCard[]>
     available(roomId: number, date: string): Promise<RoomCard['timeSlots']>
     reserve(params: {
       roomId: number
@@ -231,13 +231,47 @@ export class SomaClient {
     this.room = {
       list: async (options) => {
         await this.requireAuth()
-        return formatters.parseRoomList(
+        const date = options?.date ?? new Date().toISOString().slice(0, 10)
+        const rooms = formatters.parseRoomList(
           await this.http.post('/mypage/officeMng/list.do', {
             menuNo: MENU_NO.ROOM,
-            sdate: options?.date ?? new Date().toISOString().slice(0, 10),
+            sdate: date,
             searchItemId: options?.room ? String(resolveRoomId(options.room)) : '',
           }),
         )
+
+        if (!options?.includeMentoring) return rooms
+
+        try {
+          const dateMentoring = await this.fetchMentoringForDate(date)
+          if (dateMentoring.length === 0) return rooms
+
+          const details = (
+            await Promise.all(dateMentoring.map((m) => this.mentoring.get(m.id).catch(() => null)))
+          ).filter((d): d is NonNullable<typeof d> => d !== null)
+
+          const authorByIdFromList = new Map(dateMentoring.map((m) => [m.id, m.author]))
+          for (const room of rooms) {
+            for (const slot of room.timeSlots) {
+              if (slot.available) continue
+              const match = details.find(
+                (d) => d.venue === room.name && slot.time >= d.sessionTime.start && slot.time < d.sessionTime.end,
+              )
+              if (match) {
+                slot.mentoring = {
+                  id: match.id,
+                  title: match.title,
+                  type: match.type,
+                  author: authorByIdFromList.get(match.id) ?? match.author,
+                }
+              }
+            }
+          }
+        } catch {
+          // Best-effort: return rooms without mentoring enrichment
+        }
+
+        return rooms
       },
       available: async (roomId, date) => {
         await this.requireAuth()
@@ -471,6 +505,11 @@ export class SomaClient {
     if (!identity) {
       throw new AuthenticationError()
     }
+  }
+
+  private async fetchMentoringForDate(date: string): Promise<MentoringListItem[]> {
+    const { items } = await this.mentoring.list()
+    return items.filter((m) => m.sessionDate === date)
   }
 
   private async resolveUser(): Promise<UserIdentity | undefined> {

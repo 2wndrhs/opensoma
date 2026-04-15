@@ -4,9 +4,9 @@ import * as formatters from '../formatters'
 import { handleError } from '../shared/utils/error-handler'
 import { formatOutput } from '../shared/utils/output'
 import { buildRoomReservationPayload, resolveRoomId } from '../shared/utils/swmaestro'
-import { getHttpOrExit } from './helpers'
+import { getClientOrExit, getHttpOrExit } from './helpers'
 
-type ListOptions = { date?: string; room?: string; pretty?: boolean }
+type ListOptions = { date?: string; room?: string; mentoring?: boolean; pretty?: boolean }
 type AvailableOptions = { date: string; pretty?: boolean }
 type ReserveOptions = {
   room: string
@@ -20,6 +20,16 @@ type ReserveOptions = {
 
 async function listAction(options: ListOptions): Promise<void> {
   try {
+    if (options.mentoring) {
+      const client = await getClientOrExit()
+      const rooms = await client.room.list({
+        date: options.date,
+        room: options.room,
+        includeMentoring: true,
+      })
+      console.log(formatOutput(rooms, options.pretty))
+      return
+    }
     const http = await getHttpOrExit()
     const html = await http.post('/mypage/officeMng/list.do', {
       menuNo: '200058',
@@ -76,6 +86,7 @@ export const roomCommand = new Command('room')
       .description('List rooms')
       .option('--date <date>', 'Reservation date')
       .option('--room <room>', 'Room filter')
+      .option('--mentoring', 'Include mentoring session info in time slots')
       .option('--pretty', 'Pretty print JSON output')
       .action(listAction),
   )
