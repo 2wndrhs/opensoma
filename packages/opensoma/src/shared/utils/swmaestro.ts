@@ -7,6 +7,11 @@ export function toReportCd(type: 'public' | 'lecture'): string {
   return type === 'lecture' ? REPORT_CD.MENTOR_LECTURE : REPORT_CD.PUBLIC_MENTORING
 }
 
+export function toMentoringType(type: string): 'public' | 'lecture' {
+  if (type.includes('특강') || type === 'lecture') return 'lecture'
+  return 'public'
+}
+
 export function buildMentoringPayload(params: {
   title: string
   type: 'public' | 'lecture'

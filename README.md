@@ -157,6 +157,10 @@ opensoma mentoring create \
   --end 16:00 \
   --venue "스페이스 A1"
 
+# 멘토링 수정 (변경할 필드만 지정)
+opensoma mentoring update <id> --title "새 제목"
+opensoma mentoring update <id> --venue "스페이스 A2" --start 15:00 --end 17:00
+
 # 멘토링 삭제
 opensoma mentoring delete <id>
 
@@ -251,6 +255,10 @@ await client.mentoring.create({
   endTime: '16:00',
   venue: '스페이스 A1',
 })
+
+// 멘토링 수정 (변경할 필드만 지정)
+await client.mentoring.update(123, { title: '새 제목' })
+await client.mentoring.update(123, { venue: '스페이스 A2', startTime: '15:00' })
 
 // 회의실 목록
 const rooms = await client.room.list({ date: '2025-01-15' })

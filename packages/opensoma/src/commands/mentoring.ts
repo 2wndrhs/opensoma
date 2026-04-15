@@ -11,6 +11,7 @@ import {
   buildDeleteMentoringPayload,
   buildMentoringPayload,
   buildUpdateMentoringPayload,
+  toMentoringType,
 } from '../shared/utils/swmaestro'
 import { getHttpOrExit } from './helpers'
 
@@ -36,12 +37,12 @@ type CreateOptions = {
   pretty?: boolean
 }
 type UpdateOptions = {
-  title: string
-  type: 'public' | 'lecture'
-  date: string
-  start: string
-  end: string
-  venue: string
+  title?: string
+  type?: 'public' | 'lecture'
+  date?: string
+  start?: string
+  end?: string
+  venue?: string
   maxAttendees?: string
   regStart?: string
   regEnd?: string
@@ -120,19 +121,26 @@ async function createAction(options: CreateOptions): Promise<void> {
 async function updateAction(id: string, options: UpdateOptions): Promise<void> {
   try {
     const http = await getHttpOrExit()
+    const numId = Number.parseInt(id, 10)
+    const html = await http.get('/mypage/mentoLec/view.do', {
+      menuNo: MENU_NO.MENTORING,
+      qustnrSn: id,
+    })
+    const existing = formatters.parseMentoringDetail(html, numId)
+
     await http.post(
       '/mypage/mentoLec/update.do',
-      buildUpdateMentoringPayload(Number.parseInt(id, 10), {
-        title: options.title,
-        type: options.type,
-        date: options.date,
-        startTime: options.start,
-        endTime: options.end,
-        venue: options.venue,
-        maxAttendees: options.maxAttendees ? Number.parseInt(options.maxAttendees, 10) : undefined,
-        regStart: options.regStart,
-        regEnd: options.regEnd,
-        content: options.content,
+      buildUpdateMentoringPayload(numId, {
+        title: options.title ?? existing.title,
+        type: options.type ?? toMentoringType(existing.type),
+        date: options.date ?? existing.sessionDate,
+        startTime: options.start ?? existing.sessionTime.start,
+        endTime: options.end ?? existing.sessionTime.end,
+        venue: options.venue ?? existing.venue,
+        maxAttendees: options.maxAttendees ? Number.parseInt(options.maxAttendees, 10) : existing.attendees.max,
+        regStart: options.regStart ?? existing.registrationPeriod.start,
+        regEnd: options.regEnd ?? existing.registrationPeriod.end,
+        content: options.content ?? existing.content,
       }),
     )
     console.log(formatOutput({ ok: true }, options.pretty))
@@ -235,14 +243,14 @@ export const mentoringCommand = new Command('mentoring')
   )
   .addCommand(
     new Command('update')
-      .description('Update a mentoring session')
+      .description('Update a mentoring session (partial update - only specified fields are changed)')
       .argument('<id>')
-      .requiredOption('--title <title>', 'Title')
-      .requiredOption('--type <type>', 'Mentoring type (public|lecture)')
-      .requiredOption('--date <date>', 'Session date')
-      .requiredOption('--start <time>', 'Start time')
-      .requiredOption('--end <time>', 'End time')
-      .requiredOption('--venue <venue>', 'Venue')
+      .option('--title <title>', 'Title')
+      .option('--type <type>', 'Mentoring type (public|lecture)')
+      .option('--date <date>', 'Session date')
+      .option('--start <time>', 'Start time')
+      .option('--end <time>', 'End time')
+      .option('--venue <venue>', 'Venue')
       .option('--max-attendees <count>', 'Maximum attendees')
       .option('--reg-start <date>', 'Registration start date')
       .option('--reg-end <date>', 'Registration end date')
