@@ -232,13 +232,13 @@ describe('SomaClient', () => {
       post: async (path: string, data: Record<string, string>) => {
         calls.push({ method: 'post', path, data })
         if (path === '/mypage/officeMng/rentTime.do') {
-          return '<div class="time-grid"><span>09:00</span></div>'
+          return '<span class="ck-st2 disabled" data-hour="09" data-minute="00"><input type="checkbox" disabled="disabled"><label title="아침 회의&lt;br&gt;예약자 : 김오픈">오전 09:00</label></span>'
         }
         return '<ul class="bbs-reserve"><li class="item"><a href="javascript:void(0);" onclick="location.href=\'/sw/mypage/officeMng/view.do?itemId=17\';"><div class="cont"><h4 class="tit">스페이스 A1</h4><ul class="txt bul-dot grey"><li>이용기간 : 2026-04-01 ~ 2026-12-31</li><li><p>설명 : 4인</p></li><li class="time-list"><div class="time-grid"><span>09:00</span></div></li></ul></div></a></li></ul>'
       },
     })
 
-    const roomList = await client.room.list({ date: '2026-04-01', room: 'A1' })
+    const roomList = await client.room.list({ date: '2026-04-01', room: 'A1', includeReservations: true })
     const roomSlots = await client.room.available(17, '2026-04-01')
     const dashboard = await client.dashboard.get()
     const noticeList = await client.notice.list({ page: 2 })
@@ -250,7 +250,12 @@ describe('SomaClient', () => {
     const history = await client.mentoring.history({ page: 4 })
 
     expect(roomList[0]?.itemId).toBe(17)
-    expect(roomSlots).toEqual([{ time: '09:00', available: true }])
+    expect(roomList[0]?.timeSlots).toEqual([
+      { time: '09:00', available: false, reservation: { title: '아침 회의', bookedBy: '김오픈' } },
+    ])
+    expect(roomSlots).toEqual([
+      { time: '09:00', available: false, reservation: { title: '아침 회의', bookedBy: '김오픈' } },
+    ])
     expect(dashboard.name).toBe('전수열')
     expect(dashboard.mentoringSessions).toEqual([
       {
@@ -284,6 +289,11 @@ describe('SomaClient', () => {
 
     const dashboardCallIndex = calls.findIndex((c) => c.path === '/mypage/myMain/dashboard.do')
     expect(dashboardCallIndex).toBeGreaterThanOrEqual(0)
+    expect(calls).toContainEqual({
+      method: 'post',
+      path: '/mypage/officeMng/rentTime.do',
+      data: { viewType: 'CONTBODY', itemId: '17', rentDt: '2026-04-01' },
+    })
     const mentoringListCall = calls.find((c) => c.path === '/mypage/mentoLec/list.do')
     expect(mentoringListCall?.data).toEqual({
       menuNo: MENU_NO.MENTORING,

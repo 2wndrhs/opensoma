@@ -1,4 +1,3 @@
-import { SomaClient } from '../client'
 import { CredentialManager } from '../credential-manager'
 import { SomaHttp } from '../http'
 import { recoverSession } from '../session-recovery'
@@ -92,12 +91,4 @@ export async function getHttpOrExit(): Promise<SomaHttp> {
     )
     process.exit(1)
   }
-}
-
-export async function getClientOrExit(): Promise<SomaClient> {
-  const http = await getHttpOrExit()
-  return new SomaClient({
-    sessionCookie: http.getSessionCookie(),
-    csrfToken: http.getCsrfToken() ?? undefined,
-  })
 }
