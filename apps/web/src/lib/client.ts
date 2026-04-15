@@ -17,6 +17,7 @@ type SessionLike = {
 export async function validateClientSession<T extends Pick<SomaClient, 'getSessionData' | 'isLoggedIn' | 'login'>>(
   session: SessionLike,
   client: T,
+  persistSession: boolean = true,
 ): Promise<T> {
   if (!session.isLoggedIn || !session.sessionCookie || !session.csrfToken) {
     throw new AuthenticationError(NOT_AUTHENTICATED_MESSAGE)
@@ -26,7 +27,7 @@ export async function validateClientSession<T extends Pick<SomaClient, 'getSessi
   if (!isValid && session.username && session.password) {
     isValid = await retryLogin(client)
 
-    if (isValid) {
+    if (isValid && persistSession) {
       const sessionData = client.getSessionData()
       if (!sessionData.sessionCookie || !sessionData.csrfToken) {
         throw new AuthenticationError(NOT_AUTHENTICATED_MESSAGE)
@@ -69,7 +70,7 @@ async function delay(ms: number): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-export async function createClient(): Promise<SomaClient> {
+export async function createClient(persistSession: boolean = true): Promise<SomaClient> {
   const session = await getSession()
   const client = new SomaClient({
     sessionCookie: session.sessionCookie,
@@ -79,5 +80,5 @@ export async function createClient(): Promise<SomaClient> {
     verbose: process.env.OPENSOMA_VERBOSE === 'true',
   })
 
-  return validateClientSession(session, client)
+  return validateClientSession(session, client, persistSession)
 }

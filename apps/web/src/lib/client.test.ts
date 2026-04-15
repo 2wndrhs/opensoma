@@ -80,4 +80,68 @@ describe('validateClientSession', () => {
     expect(session.sessionCookie).toBe('fresh-session-cookie')
     expect(session.csrfToken).toBe('fresh-csrf-token')
   })
+
+  it('does not persist session when persistSession is false', async () => {
+    let saveCalled = false
+    let loginAttempts = 0
+    const session = {
+      isLoggedIn: true,
+      sessionCookie: 'stale-session-cookie',
+      csrfToken: 'stale-csrf-token',
+      username: 'devxoul@gmail.com',
+      password: 'password',
+      save: async () => {
+        saveCalled = true
+      },
+    }
+
+    const client = {
+      isLoggedIn: async () => loginAttempts > 0,
+      login: async () => {
+        loginAttempts += 1
+      },
+      getSessionData: () => ({
+        sessionCookie: 'fresh-session-cookie',
+        csrfToken: 'fresh-csrf-token',
+      }),
+    }
+
+    await expect(validateClientSession(session, client, false)).resolves.toBe(client)
+    expect(loginAttempts).toBe(1)
+    expect(saveCalled).toBe(false)
+    expect(session.sessionCookie).toBe('stale-session-cookie')
+    expect(session.csrfToken).toBe('stale-csrf-token')
+  })
+
+  it('persists session by default when re-login succeeds', async () => {
+    let saveCalled = false
+    let loginAttempts = 0
+    const session = {
+      isLoggedIn: true,
+      sessionCookie: 'stale-session-cookie',
+      csrfToken: 'stale-csrf-token',
+      username: 'devxoul@gmail.com',
+      password: 'password',
+      save: async () => {
+        saveCalled = true
+      },
+    }
+
+    const client = {
+      isLoggedIn: async () => loginAttempts > 0,
+      login: async () => {
+        loginAttempts += 1
+      },
+      getSessionData: () => ({
+        sessionCookie: 'fresh-session-cookie',
+        csrfToken: 'fresh-csrf-token',
+      }),
+    }
+
+    await expect(validateClientSession(session, client)).resolves.toBe(client)
+    expect(loginAttempts).toBe(1)
+    expect(saveCalled).toBe(true)
+    expect(session.sessionCookie).toBe('fresh-session-cookie')
+    expect(session.csrfToken).toBe('fresh-csrf-token')
+  })
 })
