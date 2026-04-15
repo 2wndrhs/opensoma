@@ -103,7 +103,7 @@ export async function fetchRoomAvailability(
 export async function fetchRooms(date: string, room?: string): Promise<RoomCard[]> {
   try {
     const client = await createClient()
-    return await client.room.list({ date, room: room || undefined, includeMentoring: true })
+    return await client.room.list({ date, room: room || undefined, includeReservations: true })
   } catch (error) {
     if (error instanceof AuthenticationError) {
       redirect('/logout')

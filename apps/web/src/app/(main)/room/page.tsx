@@ -18,7 +18,7 @@ export default async function RoomPage({
   const roomParam = getFirstValue(resolvedSearchParams.room) ?? ''
   const selectedRooms = roomParam ? roomParam.split(',').filter(Boolean) : []
   const client = await requireAuth()
-  const allRooms = await client.room.list({ date, includeMentoring: true })
+  const allRooms = await client.room.list({ date, includeReservations: true })
 
   return (
     <div className="space-y-6">

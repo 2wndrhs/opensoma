@@ -17,7 +17,7 @@ export default async function MentoringCreatePage({
   const initialDate = defaultValues.date ?? new Date().toISOString().slice(0, 10)
   const client = await requireAuth()
   const [initialRooms, dashboard] = await Promise.all([
-    client.room.list({ date: initialDate, includeMentoring: true }),
+    client.room.list({ date: initialDate, includeReservations: true }),
     client.dashboard.get(),
   ])
   const existingReservations = dashboard.roomReservations

@@ -108,7 +108,7 @@ export function RoomTimeline({ rooms: allRooms, selectedRooms, date }: RoomTimel
                   const slotData = slotMaps.get(room.itemId)?.get(time)
                   const hasSlot = slotData !== undefined
                   const available = slotData?.available ?? false
-                  const mentoring = slotData?.mentoring
+                  const reservation = slotData?.reservation
                   const selected = selectedRoomId === room.itemId && selectedSlots.includes(time)
 
                   return (
@@ -121,21 +121,22 @@ export function RoomTimeline({ rooms: allRooms, selectedRooms, date }: RoomTimel
                               ? 'border border-slot-selected-border bg-slot-selected text-slot-selected-foreground'
                               : available
                                 ? 'cursor-pointer border border-slot-available-border bg-slot-available text-slot-available-foreground hover:border-slot-available-border-hover hover:bg-surface'
-                                : mentoring
+                                : reservation
                                   ? 'cursor-not-allowed border border-primary/30 bg-primary/10 text-foreground-muted'
                                   : 'cursor-not-allowed border border-border bg-muted text-foreground-muted opacity-70',
                           )}
                           disabled={!available}
-                          title={mentoring?.title}
+                          title={reservation ? formatReservationLabel(reservation) : undefined}
                           type="button"
                           onClick={() => handleSelect(room.itemId, time)}
                         >
                           {selected ? (
                             '✓'
                           ) : !available ? (
-                            mentoring ? (
-                              <span className="block max-w-24 truncate px-0.5 text-[10px] leading-tight font-normal opacity-70">
-                                {mentoring.title}
+                            reservation ? (
+                              <span className="flex max-w-24 flex-col items-center gap-0.5 px-0.5 leading-none font-normal opacity-70">
+                                <span className="w-full truncate text-[10px]">{reservation.title}</span>
+                                <span className="w-full truncate text-[8px] opacity-60">{reservation.bookedBy}</span>
                               </span>
                             ) : (
                               '—'
@@ -171,7 +172,7 @@ export function RoomTimeline({ rooms: allRooms, selectedRooms, date }: RoomTimel
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span aria-hidden="true" className="size-2 rounded-full border border-primary/30 bg-primary/10" />
-          멘토링
+          예약됨
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span
@@ -199,6 +200,11 @@ export function RoomTimeline({ rooms: allRooms, selectedRooms, date }: RoomTimel
       ) : null}
     </div>
   )
+}
+
+function formatReservationLabel(reservation: { title: string; bookedBy: string }) {
+  if (reservation.title.includes(reservation.bookedBy)) return reservation.title
+  return `${reservation.bookedBy} · ${reservation.title}`
 }
 
 function formatSelectionSummary(selectedSlots: string[]) {
