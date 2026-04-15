@@ -36,10 +36,11 @@ To effectively use opensoma, you must understand the following core concepts tha
   - **스페이스 A6**: 22 (Capacity: 4)
   - **스페이스 A7**: 23 (Capacity: 4)
   - **스페이스 A8**: 24 (Capacity: 4)
-- **Mentoring Venues**: When creating mentoring sessions or reports, the `--venue` option accepts these known venue names:
+- **Mentoring Venues**: When creating mentoring sessions or reports, the `--venue` option accepts these known venue names. Toz locations require the `토즈-` prefix:
   - SWMaestro center rooms: 스페이스 A1–A8, 스페이스 M1, 스페이스 M2, 스페이스 S
-  - Toz locations: 광화문점, 양재점, 강남컨퍼런스센터점, 건대점, 강남역토즈타워점, 선릉점, 역삼점, 홍대점, 신촌비즈니스센터점
+  - Toz locations: 토즈-광화문점, 토즈-양재점, 토즈-강남컨퍼런스센터점, 토즈-건대점, 토즈-강남역토즈타워점, 토즈-선릉점, 토즈-역삼점, 토즈-홍대점, 토즈-신촌비즈니스센터점
   - Online: 온라인(Webex)
+  - Expert: (엑스퍼트) 연수센터_라운지, (엑스퍼트) 외부_카페
 - **Mentoring Session Types**:
   - **자유 멘토링 (Public Mentoring)**: These are typically smaller, more intimate sessions focused on specific technical hurdles, project feedback, or career advice. They often have a limited number of attendees and are highly interactive. Any mentee can apply.
   - **멘토 특강 (Mentor Lecture)**: These are larger-scale educational events or seminars led by mentors. They are designed for a broader audience and may be held in larger seminar rooms or conducted online.

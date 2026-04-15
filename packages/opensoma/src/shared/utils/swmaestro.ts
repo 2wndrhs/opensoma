@@ -1,6 +1,6 @@
 import { parse } from 'node-html-parser'
 
-import { MENU_NO, REPORT_CD, ROOM_IDS, TIME_SLOTS } from '../../constants'
+import { MENU_NO, REPORT_CD, ROOM_IDS, TIME_SLOTS, VENUE_ALIASES } from '../../constants'
 import { type ApplicationHistoryItem, ApplicationHistoryItemSchema } from '../../types'
 import { decodeHtmlEntities, escapeHtml } from './html'
 
@@ -35,7 +35,7 @@ export function buildMentoringPayload(params: {
     eventDt: params.date,
     eventStime: params.startTime,
     eventEtime: params.endTime,
-    place: params.venue,
+    place: resolveVenue(params.venue),
     qestnarCn: formatEditorContent(params.content ?? ''),
     atchFileId: '',
     fileFieldNm_1: '',
@@ -80,6 +80,11 @@ export function buildCancelApplicationPayload(params: { applySn: number; qustnrS
     applySn: String(params.applySn),
     qustnrSn: String(params.qustnrSn),
   }
+}
+
+export function resolveVenue(venue: string): string {
+  const trimmed = venue.trim()
+  return VENUE_ALIASES[trimmed] ?? trimmed
 }
 
 export function resolveRoomId(room: string | number): number {
@@ -291,7 +296,7 @@ export function buildReportPayload(options: {
     reportGubunCd: reportType,
     progressDt: progressDate,
     teamNms: options.teamNames ?? '',
-    progressPlace: options.venue,
+    progressPlace: resolveVenue(options.venue),
     attendanceCnt: String(options.attendanceCount),
     attendanceNms: options.attendanceNames,
     progressStime: options.progressStartTime,

@@ -26,15 +26,15 @@ export const ROOM_IDS: Record<string, number> = {
 }
 
 export const VENUES = {
-  TOZ_GWANGHWAMUN: '광화문점',
-  TOZ_YANGJAE: '양재점',
-  TOZ_GANGNAM_CONFERENCE_CENTER: '강남컨퍼런스센터점',
-  TOZ_KONKUK: '건대점',
-  TOZ_GANGNAM_TOWER: '강남역토즈타워점',
-  TOZ_SEOLLEUNG: '선릉점',
-  TOZ_YEOKSAM: '역삼점',
-  TOZ_HONGDAE: '홍대점',
-  TOZ_SINCHON_BUSINESS_CENTER: '신촌비즈니스센터점',
+  TOZ_GWANGHWAMUN: '토즈-광화문점',
+  TOZ_YANGJAE: '토즈-양재점',
+  TOZ_GANGNAM_CONFERENCE_CENTER: '토즈-강남컨퍼런스센터점',
+  TOZ_KONKUK: '토즈-건대점',
+  TOZ_GANGNAM_TOWER: '토즈-강남역토즈타워점',
+  TOZ_SEOLLEUNG: '토즈-선릉점',
+  TOZ_YEOKSAM: '토즈-역삼점',
+  TOZ_HONGDAE: '토즈-홍대점',
+  TOZ_SINCHON_BUSINESS_CENTER: '토즈-신촌비즈니스센터점',
   ONLINE_WEBEX: '온라인(Webex)',
   SPACE_A1: '스페이스 A1',
   SPACE_A2: '스페이스 A2',
@@ -47,7 +47,22 @@ export const VENUES = {
   SPACE_M1: '스페이스 M1',
   SPACE_M2: '스페이스 M2',
   SPACE_S: '스페이스 S',
+  EXPERT_LOUNGE: '(엑스퍼트) 연수센터_라운지',
+  EXPERT_CAFE: '(엑스퍼트) 외부_카페',
 } as const
+
+export const VENUE_ALIASES: Record<string, string> = {
+  광화문점: '토즈-광화문점',
+  양재점: '토즈-양재점',
+  강남컨퍼런스센터점: '토즈-강남컨퍼런스센터점',
+  건대점: '토즈-건대점',
+  강남역토즈타워점: '토즈-강남역토즈타워점',
+  선릉점: '토즈-선릉점',
+  역삼점: '토즈-역삼점',
+  홍대점: '토즈-홍대점',
+  신촌비즈니스센터점: '연수센터-7',
+  '토즈-신촌비즈니스센터점': '연수센터-7',
+}
 
 export const REPORT_CD = {
   PUBLIC_MENTORING: 'MRC010',
