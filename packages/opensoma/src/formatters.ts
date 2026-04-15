@@ -1,5 +1,6 @@
 import { type HTMLElement, parse } from 'node-html-parser'
 
+import { decodeHtmlEntities } from './shared/utils/html'
 import {
   ApplicationHistoryItemSchema,
   type ApplicationHistoryItem,
@@ -98,7 +99,7 @@ export function parseMentoringDetail(html: string, id = 0): MentoringDetail {
     status: extractStatus(labels.상태 || rawTitle),
     author: labels['작성자'] || '',
     createdAt: labels['등록일'] || '',
-    content: contentNode?.innerHTML.trim() ?? '',
+    content: decodeHtmlEntities(contentNode?.innerHTML.trim() ?? ''),
     venue: labels['장소'] || '',
     applicants,
   })
@@ -202,7 +203,7 @@ export function parseNoticeDetail(html: string, id = 0): NoticeDetail {
     title: cleanText(top?.querySelector('.tit')) || labels['제목'] || cleanText(root.querySelector('h1, h2, .title')),
     author,
     createdAt,
-    content: contentNode?.innerHTML.trim() ?? '',
+    content: decodeHtmlEntities(contentNode?.innerHTML.trim() ?? ''),
   })
 }
 
