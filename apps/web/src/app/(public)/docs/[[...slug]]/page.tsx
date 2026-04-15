@@ -6,6 +6,7 @@ import rehypeSlug from 'rehype-slug'
 import remarkGfm from 'remark-gfm'
 
 import { extractHeadings, getAllDocSlugs, getDoc } from '@/lib/docs'
+import { SITE_DESCRIPTION, SITE_NAME, toAbsoluteUrl } from '@/lib/seo'
 
 import { DocsTableOfContents } from '../docs-toc'
 import { mdxComponents } from '../mdx-components'
@@ -19,9 +20,29 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const doc = getDoc(slug)
   if (!doc) return {}
 
+  const pathname = doc.meta.href
+  const title = doc.meta.title
+  const description = doc.meta.description ?? SITE_DESCRIPTION
+
   return {
-    title: doc.meta.title,
-    description: doc.meta.description,
+    title,
+    description,
+    keywords: ['opensoma docs', doc.meta.title, ...slug],
+    alternates: {
+      canonical: pathname,
+    },
+    openGraph: {
+      type: slug.length === 0 ? 'website' : 'article',
+      url: pathname,
+      title,
+      description,
+      siteName: SITE_NAME,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
   }
 }
 
@@ -37,9 +58,28 @@ export default async function DocPage({ params }: PageProps) {
   if (!doc) notFound()
 
   const headings = extractHeadings(doc.content)
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    headline: doc.meta.title,
+    description: doc.meta.description ?? SITE_DESCRIPTION,
+    url: toAbsoluteUrl(doc.meta.href),
+    about: 'opensoma documentation',
+    inLanguage: 'ko-KR',
+    isPartOf: {
+      '@type': 'WebSite',
+      name: SITE_NAME,
+      url: toAbsoluteUrl('/'),
+    },
+  }
 
   return (
     <div className="flex gap-8">
+      <script
+        type="application/ld+json"
+      >
+        {JSON.stringify(jsonLd)}
+      </script>
       <article className="docs-prose min-w-0 flex-1">
         <h1>{doc.meta.title}</h1>
         {doc.meta.description && <p className="lead">{doc.meta.description}</p>}

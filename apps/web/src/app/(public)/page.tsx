@@ -2,14 +2,66 @@ import { ArrowRight, Browser, Command, Package, Terminal } from '@phosphor-icons
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { GITHUB_REPOSITORY_URL, SITE_DESCRIPTION, SITE_KEYWORDS, SITE_PAGE_TITLE, SITE_TITLE, getSiteUrl } from '@/lib/seo'
+
 export const metadata: Metadata = {
-  title: '오픈소마 — SWMaestro CLI, SDK & Web',
-  description: 'SWMaestro 플랫폼을 웹, 커맨드라인, 프로그래밍 방식으로 사용할 수 있는 오픈소스 프로젝트',
+  title: SITE_PAGE_TITLE,
+  description: SITE_DESCRIPTION,
+  keywords: SITE_KEYWORDS,
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    url: '/',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    siteName: '오픈소마',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
 }
 
 export default function LandingPage() {
+  const siteUrl = getSiteUrl()
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': `${siteUrl}#website`,
+        url: siteUrl,
+        name: '오픈소마',
+        description: SITE_DESCRIPTION,
+        inLanguage: 'ko-KR',
+      },
+      {
+        '@type': 'SoftwareApplication',
+        name: 'opensoma',
+        applicationCategory: 'DeveloperApplication',
+        operatingSystem: 'macOS, Linux, Windows',
+        description: SITE_DESCRIPTION,
+        url: siteUrl,
+        sameAs: [GITHUB_REPOSITORY_URL],
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'USD',
+        },
+      },
+    ],
+  }
+
   return (
     <div className="flex flex-1 flex-col">
+      <script
+        type="application/ld+json"
+      >
+        {JSON.stringify(jsonLd)}
+      </script>
       <section className="flex flex-1 flex-col items-center justify-center px-4 py-24 text-center">
         <h1 className="max-w-2xl text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
           SWMaestro
