@@ -72,10 +72,13 @@ describe('SomaClient', () => {
   })
 
   test('mutating operations post expected payloads', async () => {
+    const mentoringDetailHtml =
+      '<div class="group"><strong class="t">모집 명</strong><div class="c">[자유 멘토링] 기존 멘토링</div></div><div class="group"><strong class="t">접수 기간</strong><div class="c">2026.03.01 ~ 2026.03.15</div></div><div class="group"><strong class="t">강의날짜</strong><div class="c"><span>2026.03.20 10:00시 ~ 12:00시</span></div></div><div class="group"><strong class="t">장소</strong><div class="c">온라인(Webex)</div></div><div class="group"><strong class="t">모집인원</strong><div class="c">5명</div></div><div class="group"><strong class="t">작성자</strong><div class="c">전수열</div></div><div class="group"><strong class="t">등록일</strong><div class="c">2026.03.01</div></div><div class="cont"><p>기존 내용</p></div>'
     const client = new SomaClient()
     const calls: Array<{ path: string; data: Record<string, string> }> = []
     Reflect.set(client, 'http', {
       checkLogin: async () => ({ userId: 'user@example.com', userNm: 'Test' }),
+      get: async () => mentoringDetailHtml,
       post: async (path: string, data: Record<string, string>) => {
         calls.push({ path, data })
         return ''
@@ -158,6 +161,38 @@ describe('SomaClient', () => {
       qustnrSn: '11',
       applyGb: 'C',
       stepHeader: '0',
+    })
+  })
+
+  test('mentoring.update merges partial params with existing data', async () => {
+    const mentoringDetailHtml =
+      '<div class="group"><strong class="t">모집 명</strong><div class="c">[멘토 특강] 웹 성능 특강</div></div><div class="group"><strong class="t">접수 기간</strong><div class="c">2026.04.01 ~ 2026.04.10</div></div><div class="group"><strong class="t">강의날짜</strong><div class="c"><span>2026.04.11 14:00시 ~ 15:30시</span></div></div><div class="group"><strong class="t">장소</strong><div class="c">온라인(Webex)</div></div><div class="group"><strong class="t">모집인원</strong><div class="c">20명</div></div><div class="group"><strong class="t">작성자</strong><div class="c">전수열</div></div><div class="group"><strong class="t">등록일</strong><div class="c">2026.04.01</div></div><div class="cont"><p>세션 본문</p></div>'
+    const client = new SomaClient()
+    const postCalls: Array<{ path: string; data: Record<string, string> }> = []
+    Reflect.set(client, 'http', {
+      checkLogin: async () => ({ userId: 'user@example.com', userNm: 'Test' }),
+      get: async () => mentoringDetailHtml,
+      post: async (path: string, data: Record<string, string>) => {
+        postCalls.push({ path, data })
+        return ''
+      },
+    })
+
+    await client.mentoring.update(9572, { title: '변경된 제목' })
+
+    expect(postCalls).toHaveLength(1)
+    expect(postCalls[0]?.data).toMatchObject({
+      qustnrSj: '변경된 제목',
+      qustnrSn: '9572',
+      reportCd: 'MRC020',
+      eventDt: '2026-04-11',
+      eventStime: '14:00',
+      eventEtime: '15:30',
+      place: '온라인(Webex)',
+      applyCnt: '20',
+      bgnde: '2026-04-01',
+      endde: '2026-04-10',
+      qestnarCn: '<p>세션 본문</p>',
     })
   })
 

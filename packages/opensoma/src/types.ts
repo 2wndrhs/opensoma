@@ -222,3 +222,20 @@ export const ReportUpdateOptionsSchema = ReportCreateOptionsSchema.partial().ext
   id: z.number(),
 })
 export type ReportUpdateOptions = z.infer<typeof ReportUpdateOptionsSchema>
+
+export const MentoringCreateOptionsSchema = z.object({
+  title: z.string(),
+  type: z.enum(['public', 'lecture']),
+  date: z.string(),
+  startTime: z.string(),
+  endTime: z.string(),
+  venue: z.string(),
+  maxAttendees: z.number().optional(),
+  regStart: z.string().optional(),
+  regEnd: z.string().optional(),
+  content: z.string().optional(),
+})
+export type MentoringCreateOptions = z.infer<typeof MentoringCreateOptionsSchema>
+
+export const MentoringUpdateOptionsSchema = MentoringCreateOptionsSchema.partial()
+export type MentoringUpdateOptions = z.infer<typeof MentoringUpdateOptionsSchema>

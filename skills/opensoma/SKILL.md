@@ -189,9 +189,8 @@ opensoma mentoring get <id> [--pretty]
 # --content: Detailed description in HTML format
 opensoma mentoring create --title <title> --type <public|lecture> --date <YYYY-MM-DD> --start <HH:MM> --end <HH:MM> --venue <venue> [--max-attendees <n>] [--reg-start <YYYY-MM-DD>] [--reg-end <YYYY-MM-DD>] [--content <html>] [--pretty]
 
-# Update an existing mentoring session
-# Core fields (title, type, date, start, end, venue) are required and replace existing values
-opensoma mentoring update <id> --title <title> --type <public|lecture> --date <YYYY-MM-DD> --start <HH:MM> --end <HH:MM> --venue <venue> [--max-attendees <n>] [--reg-start <YYYY-MM-DD>] [--reg-end <YYYY-MM-DD>] [--content <html>] [--pretty]
+# Update an existing mentoring session (partial update — only specified fields are changed)
+opensoma mentoring update <id> [--title <title>] [--type <public|lecture>] [--date <YYYY-MM-DD>] [--start <HH:MM>] [--end <HH:MM>] [--venue <venue>] [--max-attendees <n>] [--reg-start <YYYY-MM-DD>] [--reg-end <YYYY-MM-DD>] [--content <html>] [--pretty]
 
 # Delete a mentoring session you created
 opensoma mentoring delete <id> [--pretty]

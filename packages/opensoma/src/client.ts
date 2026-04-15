@@ -16,6 +16,7 @@ import {
   buildUpdateMentoringPayload,
   parseEventDetail,
   resolveRoomId,
+  toMentoringType,
   toRegionCode,
   toReportTypeCd,
 } from './shared/utils/swmaestro'
@@ -27,6 +28,7 @@ import type {
   MemberInfo,
   MentoringDetail,
   MentoringListItem,
+  MentoringUpdateOptions,
   NoticeDetail,
   NoticeListItem,
   Pagination,
@@ -71,7 +73,7 @@ export class SomaClient {
       regEnd?: string
       content?: string
     }): Promise<void>
-    update(id: number, params: Parameters<typeof buildMentoringPayload>[0]): Promise<void>
+    update(id: number, params: MentoringUpdateOptions): Promise<void>
     delete(id: number): Promise<void>
     apply(id: number): Promise<void>
     cancel(params: { applySn: number; qustnrSn: number }): Promise<void>
@@ -183,7 +185,20 @@ export class SomaClient {
       },
       update: async (id, params) => {
         await this.requireAuth()
-        const html = await this.http.post('/mypage/mentoLec/update.do', buildUpdateMentoringPayload(id, params))
+        const existing = await this.mentoring.get(id)
+        const merged = buildUpdateMentoringPayload(id, {
+          title: params.title ?? existing.title,
+          type: params.type ?? toMentoringType(existing.type),
+          date: params.date ?? existing.sessionDate,
+          startTime: params.startTime ?? existing.sessionTime.start,
+          endTime: params.endTime ?? existing.sessionTime.end,
+          venue: params.venue ?? existing.venue,
+          maxAttendees: params.maxAttendees ?? existing.attendees.max,
+          regStart: params.regStart ?? existing.registrationPeriod.start,
+          regEnd: params.regEnd ?? existing.registrationPeriod.end,
+          content: params.content ?? existing.content,
+        })
+        const html = await this.http.post('/mypage/mentoLec/update.do', merged)
         if (this.containsErrorIndicator(html)) {
           throw new Error(this.extractErrorMessage(html) || '멘토링 수정에 실패했습니다.')
         }
