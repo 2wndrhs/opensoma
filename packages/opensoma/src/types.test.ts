@@ -63,7 +63,10 @@ describe('schemas', () => {
         capacity: 4,
         availablePeriod: { start: '2026-04-01', end: '2026-12-31' },
         description: '소회의실 : 4인',
-        timeSlots: [{ time: '09:00', available: true }],
+        timeSlots: [
+          { time: '09:00', available: true },
+          { time: '09:30', available: false, reservation: { title: '팀 회의', bookedBy: '전수열' } },
+        ],
       }),
     ).toBeDefined()
 

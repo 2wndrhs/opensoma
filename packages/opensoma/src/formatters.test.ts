@@ -214,14 +214,18 @@ describe('formatters', () => {
       <input type="hidden" name="chkData_1" value="09:00" />
       <span class="ck-st2 disabled" data-hour="12" data-minute="00">
         <input type="checkbox" name="time" id="time1_7" value="7" disabled="disabled">
-        <label for="time1_7">PM 12:00</label>
+        <label for="time1_7" title="점심 회의&lt;br&gt;예약자 : 김오픈">PM 12:00</label>
       </span>
       <input type="hidden" name="chkData_7" value="12:00" />
     `
 
     expect(parseRoomSlots(html)).toEqual([
       { time: '09:00', available: true },
-      { time: '12:00', available: false },
+      {
+        time: '12:00',
+        available: false,
+        reservation: { title: '점심 회의', bookedBy: '김오픈' },
+      },
     ])
   })
 

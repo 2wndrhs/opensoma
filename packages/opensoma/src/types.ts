@@ -2,7 +2,12 @@ import { z } from 'zod/v4'
 
 const DateRangeSchema = z.object({ start: z.string(), end: z.string() })
 const TimeRangeSchema = z.object({ start: z.string(), end: z.string() })
-const RoomTimeSlotSchema = z.object({ time: z.string(), available: z.boolean() })
+const RoomTimeSlotReservationSchema = z.object({ title: z.string(), bookedBy: z.string() })
+const RoomTimeSlotSchema = z.object({
+  time: z.string(),
+  available: z.boolean(),
+  reservation: RoomTimeSlotReservationSchema.optional(),
+})
 const DashboardStatusItemSchema = z.object({
   title: z.string(),
   url: z.string(),

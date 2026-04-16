@@ -6,7 +6,7 @@ import { formatOutput } from '../shared/utils/output'
 import { buildRoomReservationPayload, resolveRoomId } from '../shared/utils/swmaestro'
 import { getHttpOrExit } from './helpers'
 
-type ListOptions = { date?: string; room?: string; pretty?: boolean }
+type ListOptions = { date?: string; room?: string; reservations?: boolean; pretty?: boolean }
 type AvailableOptions = { date: string; pretty?: boolean }
 type ReserveOptions = {
   room: string
@@ -21,12 +21,39 @@ type ReserveOptions = {
 async function listAction(options: ListOptions): Promise<void> {
   try {
     const http = await getHttpOrExit()
+    const date = options.date ?? new Date().toISOString().slice(0, 10)
     const html = await http.post('/mypage/officeMng/list.do', {
       menuNo: '200058',
-      sdate: options.date ?? new Date().toISOString().slice(0, 10),
+      sdate: date,
       searchItemId: options.room ? String(resolveRoomId(options.room)) : '',
     })
-    console.log(formatOutput(formatters.parseRoomList(html), options.pretty))
+    const rooms = formatters.parseRoomList(html)
+
+    if (!options.reservations) {
+      console.log(formatOutput(rooms, options.pretty))
+      return
+    }
+
+    const enrichedRooms = await Promise.all(
+      rooms.map(async (room) => {
+        try {
+          const detailHtml = await http.post('/mypage/officeMng/rentTime.do', {
+            viewType: 'CONTBODY',
+            itemId: String(room.itemId),
+            rentDt: date,
+          })
+
+          return {
+            ...room,
+            timeSlots: formatters.parseRoomSlots(detailHtml),
+          }
+        } catch {
+          return room
+        }
+      }),
+    )
+
+    console.log(formatOutput(enrichedRooms, options.pretty))
   } catch (error) {
     handleError(error)
   }
@@ -76,6 +103,7 @@ export const roomCommand = new Command('room')
       .description('List rooms')
       .option('--date <date>', 'Reservation date')
       .option('--room <room>', 'Room filter')
+      .option('--reservations', 'Include reservation info in time slots')
       .option('--pretty', 'Pretty print JSON output')
       .action(listAction),
   )

@@ -81,7 +81,7 @@ export class SomaClient {
   }
 
   readonly room: {
-    list(options?: { date?: string; room?: string }): Promise<RoomCard[]>
+    list(options?: { date?: string; room?: string; includeReservations?: boolean }): Promise<RoomCard[]>
     available(roomId: number, date: string): Promise<RoomCard['timeSlots']>
     reserve(params: {
       roomId: number
@@ -231,11 +231,33 @@ export class SomaClient {
     this.room = {
       list: async (options) => {
         await this.requireAuth()
-        return formatters.parseRoomList(
+        const date = options?.date ?? new Date().toISOString().slice(0, 10)
+        const rooms = formatters.parseRoomList(
           await this.http.post('/mypage/officeMng/list.do', {
             menuNo: MENU_NO.ROOM,
-            sdate: options?.date ?? new Date().toISOString().slice(0, 10),
+            sdate: date,
             searchItemId: options?.room ? String(resolveRoomId(options.room)) : '',
+          }),
+        )
+
+        if (!options?.includeReservations) return rooms
+
+        return Promise.all(
+          rooms.map(async (room) => {
+            try {
+              const html = await this.http.post('/mypage/officeMng/rentTime.do', {
+                viewType: 'CONTBODY',
+                itemId: String(room.itemId),
+                rentDt: date,
+              })
+
+              return {
+                ...room,
+                timeSlots: formatters.parseRoomSlots(html),
+              }
+            } catch {
+              return room
+            }
           }),
         )
       },

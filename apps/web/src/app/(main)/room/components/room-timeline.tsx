@@ -31,8 +31,7 @@ export function RoomTimeline({ rooms: allRooms, selectedRooms, date }: RoomTimel
   const selectedRoom = useMemo(() => rooms.find((room) => room.itemId === selectedRoomId), [rooms, selectedRoomId])
 
   const slotMaps = useMemo(
-    () =>
-      new Map(rooms.map((room) => [room.itemId, new Map(room.timeSlots.map((slot) => [slot.time, slot.available]))])),
+    () => new Map(rooms.map((room) => [room.itemId, new Map(room.timeSlots.map((slot) => [slot.time, slot]))])),
     [rooms],
   )
 
@@ -48,7 +47,7 @@ export function RoomTimeline({ rooms: allRooms, selectedRooms, date }: RoomTimel
 
   function handleSelect(roomId: number, time: string) {
     const slotMap = slotMaps.get(roomId)
-    if (!slotMap?.get(time)) return
+    if (!slotMap?.get(time)?.available) return
 
     if (roomId !== selectedRoomId) {
       setSelectedRoomId(roomId)
@@ -106,9 +105,10 @@ export function RoomTimeline({ rooms: allRooms, selectedRooms, date }: RoomTimel
                   <div className="flex h-8 items-center">{time}</div>
                 </td>
                 {rooms.map((room) => {
-                  const slotMap = slotMaps.get(room.itemId)
-                  const hasSlot = slotMap?.has(time)
-                  const available = slotMap?.get(time) ?? false
+                  const slotData = slotMaps.get(room.itemId)?.get(time)
+                  const hasSlot = slotData !== undefined
+                  const available = slotData?.available ?? false
+                  const reservation = slotData?.reservation
                   const selected = selectedRoomId === room.itemId && selectedSlots.includes(time)
 
                   return (
@@ -121,13 +121,27 @@ export function RoomTimeline({ rooms: allRooms, selectedRooms, date }: RoomTimel
                               ? 'border border-slot-selected-border bg-slot-selected text-slot-selected-foreground'
                               : available
                                 ? 'cursor-pointer border border-slot-available-border bg-slot-available text-slot-available-foreground hover:border-slot-available-border-hover hover:bg-surface'
-                                : 'cursor-not-allowed border border-border bg-muted text-foreground-muted opacity-70',
+                                : reservation
+                                  ? 'cursor-not-allowed border border-primary/30 bg-primary/10 text-foreground-muted'
+                                  : 'cursor-not-allowed border border-border bg-muted text-foreground-muted opacity-70',
                           )}
                           disabled={!available}
+                          title={reservation ? formatReservationLabel(reservation) : undefined}
                           type="button"
                           onClick={() => handleSelect(room.itemId, time)}
                         >
-                          {selected ? '✓' : !available ? '—' : null}
+                          {selected ? (
+                            '✓'
+                          ) : !available ? (
+                            reservation ? (
+                              <span className="flex max-w-24 flex-col items-center gap-0.5 px-0.5 leading-none font-normal opacity-70">
+                                <span className="w-full truncate text-[10px]">{reservation.title}</span>
+                                <span className="w-full truncate text-[8px] opacity-60">{reservation.bookedBy}</span>
+                              </span>
+                            ) : (
+                              '—'
+                            )
+                          ) : null}
                         </button>
                       ) : (
                         <div className="h-8" />
@@ -157,6 +171,10 @@ export function RoomTimeline({ rooms: allRooms, selectedRooms, date }: RoomTimel
           예약 가능
         </span>
         <span className="inline-flex items-center gap-1.5">
+          <span aria-hidden="true" className="size-2 rounded-full border border-primary/30 bg-primary/10" />
+          예약됨
+        </span>
+        <span className="inline-flex items-center gap-1.5">
           <span
             aria-hidden="true"
             className="inline-flex size-2 items-center justify-center rounded-full border border-border bg-muted text-[8px] leading-none text-foreground-muted"
@@ -182,6 +200,11 @@ export function RoomTimeline({ rooms: allRooms, selectedRooms, date }: RoomTimel
       ) : null}
     </div>
   )
+}
+
+function formatReservationLabel(reservation: { title: string; bookedBy: string }) {
+  if (reservation.title.includes(reservation.bookedBy)) return reservation.title
+  return `${reservation.bookedBy} · ${reservation.title}`
 }
 
 function formatSelectionSummary(selectedSlots: string[]) {
