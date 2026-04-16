@@ -1,6 +1,6 @@
 'use client'
 
-import { SignOut, User, X } from '@phosphor-icons/react'
+import { BookOpenText, GithubLogo, SignOut, User, X } from '@phosphor-icons/react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef } from 'react'
@@ -111,6 +111,24 @@ export function MobileDrawer({ username }: MobileDrawerProps) {
               </Link>
             )
           })}
+          <div className="mt-auto pt-2">
+            <Link
+              href="/docs"
+              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold text-foreground-muted transition-colors hover:bg-muted hover:text-foreground focus:outline-none"
+            >
+              <BookOpenText size={18} />
+              <span>CLI & SDK</span>
+            </Link>
+            <a
+              href="https://github.com/opensoma/opensoma"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold text-foreground-muted transition-colors hover:bg-muted hover:text-foreground focus:outline-none"
+            >
+              <GithubLogo size={18} />
+              <span>GitHub</span>
+            </a>
+          </div>
         </nav>
         {username && (
           <div className="border-t border-border p-4">

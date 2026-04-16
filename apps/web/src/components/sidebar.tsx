@@ -1,7 +1,18 @@
 'use client'
 
 import { Tooltip } from '@base-ui/react/tooltip'
-import { Check, Desktop, GithubLogo, Moon, SidebarSimple, SignOut, Sun, User, UserCircle } from '@phosphor-icons/react'
+import {
+  BookOpenText,
+  Check,
+  Desktop,
+  GithubLogo,
+  Moon,
+  SidebarSimple,
+  SignOut,
+  Sun,
+  User,
+  UserCircle,
+} from '@phosphor-icons/react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -98,38 +109,69 @@ export function Sidebar({ username }: SidebarProps) {
 
           <div className="mt-auto pt-2">
             {isSidebarCollapsed ? (
-              <Tooltip.Root>
-                <Tooltip.Trigger
-                  render={
-                    <a
-                      href="https://github.com/opensoma/opensoma"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center rounded-lg py-2 text-sm font-semibold text-foreground-muted transition-colors hover:bg-muted hover:text-foreground focus:outline-none"
-                      aria-label="GitHub"
-                    >
-                      <GithubLogo size={18} />
-                    </a>
-                  }
-                />
-                <Tooltip.Portal>
-                  <Tooltip.Positioner side="right" sideOffset={12}>
-                    <Tooltip.Popup className="rounded-lg bg-surface px-2.5 py-1.5 text-xs font-medium text-foreground shadow-[var(--shadow-elevation-2)] transition-[opacity,transform] duration-150 data-[ending-style]:translate-x-1 data-[ending-style]:opacity-0 data-[starting-style]:translate-x-1 data-[starting-style]:opacity-0">
-                      GitHub
-                    </Tooltip.Popup>
-                  </Tooltip.Positioner>
-                </Tooltip.Portal>
-              </Tooltip.Root>
+              <>
+                <Tooltip.Root>
+                  <Tooltip.Trigger
+                    render={
+                      <Link
+                        href="/docs"
+                        className="flex items-center justify-center rounded-lg py-2 text-sm font-semibold text-foreground-muted transition-colors hover:bg-muted hover:text-foreground focus:outline-none"
+                        aria-label="CLI & SDK"
+                      >
+                        <BookOpenText size={18} />
+                      </Link>
+                    }
+                  />
+                  <Tooltip.Portal>
+                    <Tooltip.Positioner side="right" sideOffset={12}>
+                      <Tooltip.Popup className="rounded-lg bg-surface px-2.5 py-1.5 text-xs font-medium text-foreground shadow-[var(--shadow-elevation-2)] transition-[opacity,transform] duration-150 data-[ending-style]:translate-x-1 data-[ending-style]:opacity-0 data-[starting-style]:translate-x-1 data-[starting-style]:opacity-0">
+                        CLI & SDK
+                      </Tooltip.Popup>
+                    </Tooltip.Positioner>
+                  </Tooltip.Portal>
+                </Tooltip.Root>
+                <Tooltip.Root>
+                  <Tooltip.Trigger
+                    render={
+                      <a
+                        href="https://github.com/opensoma/opensoma"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center rounded-lg py-2 text-sm font-semibold text-foreground-muted transition-colors hover:bg-muted hover:text-foreground focus:outline-none"
+                        aria-label="GitHub"
+                      >
+                        <GithubLogo size={18} />
+                      </a>
+                    }
+                  />
+                  <Tooltip.Portal>
+                    <Tooltip.Positioner side="right" sideOffset={12}>
+                      <Tooltip.Popup className="rounded-lg bg-surface px-2.5 py-1.5 text-xs font-medium text-foreground shadow-[var(--shadow-elevation-2)] transition-[opacity,transform] duration-150 data-[ending-style]:translate-x-1 data-[ending-style]:opacity-0 data-[starting-style]:translate-x-1 data-[starting-style]:opacity-0">
+                        GitHub
+                      </Tooltip.Popup>
+                    </Tooltip.Positioner>
+                  </Tooltip.Portal>
+                </Tooltip.Root>
+              </>
             ) : (
-              <a
-                href="https://github.com/opensoma/opensoma"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold text-foreground-muted transition-colors hover:bg-muted hover:text-foreground focus:outline-none"
-              >
-                <GithubLogo size={18} />
-                <span>GitHub</span>
-              </a>
+              <>
+                <Link
+                  href="/docs"
+                  className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold text-foreground-muted transition-colors hover:bg-muted hover:text-foreground focus:outline-none"
+                >
+                  <BookOpenText size={18} />
+                  <span>CLI & SDK</span>
+                </Link>
+                <a
+                  href="https://github.com/opensoma/opensoma"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold text-foreground-muted transition-colors hover:bg-muted hover:text-foreground focus:outline-none"
+                >
+                  <GithubLogo size={18} />
+                  <span>GitHub</span>
+                </a>
+              </>
             )}
           </div>
         </nav>
