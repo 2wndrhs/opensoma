@@ -17,10 +17,16 @@ export function emit(evt: string, payload: EventPayload = {}): void {
   for (const [k, v] of Object.entries(payload)) {
     if (v !== undefined) clean[k] = v
   }
+  let line: string
   try {
-    console.warn(PREFIX, JSON.stringify(clean))
+    line = `${PREFIX} ${JSON.stringify(clean)}\n`
   } catch {
-    console.warn(PREFIX, evt, 'stringify_failed')
+    line = `${PREFIX} ${evt} stringify_failed\n`
+  }
+  try {
+    process.stderr.write(line)
+  } catch {
+    console.warn(line.trim())
   }
 }
 
