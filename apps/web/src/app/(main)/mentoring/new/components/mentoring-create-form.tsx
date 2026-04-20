@@ -39,7 +39,6 @@ interface MentoringCreateFormProps {
 
 const initialState: { error: string } = { error: '' }
 
-
 const startTimes = createTimeRange(9, 0, 23, 0)
 const endTimes = [...createTimeRange(10, 0, 23, 30), '24:00']
 

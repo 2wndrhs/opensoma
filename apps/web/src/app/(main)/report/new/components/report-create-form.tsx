@@ -1,7 +1,7 @@
 'use client'
 
-import { useActionState, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useActionState, useRef, useState } from 'react'
 
 import { createReport } from '@/app/(main)/report/new/actions'
 import { venues } from '@/lib/venues'
@@ -29,7 +29,6 @@ const regions = [
 
 const startTimes = createTimeRange(9, 0, 23, 0)
 const endTimes = [...createTimeRange(10, 0, 23, 30), '24:00']
-
 
 export function ReportCreateForm() {
   const searchParams = useSearchParams()
@@ -163,7 +162,13 @@ export function ReportCreateForm() {
             <div className="grid gap-6 md:grid-cols-2">
               <Field name="attendanceCount">
                 <FieldLabel>참석 인원</FieldLabel>
-                <Input name="attendanceCount" min={1} placeholder="예: 4" type="number" defaultValue={searchParams.get('attendanceCount') ?? ''} />
+                <Input
+                  name="attendanceCount"
+                  min={1}
+                  placeholder="예: 4"
+                  type="number"
+                  defaultValue={searchParams.get('attendanceCount') ?? ''}
+                />
               </Field>
 
               <Field name="teamNames">
@@ -176,7 +181,12 @@ export function ReportCreateForm() {
             <Field name="attendanceNames">
               <FieldLabel>참석자 명단</FieldLabel>
               <FieldDescription>참석자 이름을 쉼표로 구분하여 입력하세요.</FieldDescription>
-              <Textarea name="attendanceNames" placeholder="예: 홍길동, 김철수, 이영희" rows={2} defaultValue={searchParams.get('attendanceNames') ?? ''} />
+              <Textarea
+                name="attendanceNames"
+                placeholder="예: 홍길동, 김철수, 이영희"
+                rows={2}
+                defaultValue={searchParams.get('attendanceNames') ?? ''}
+              />
             </Field>
 
             <Field name="nonAttendanceNames">
@@ -232,7 +242,11 @@ export function ReportCreateForm() {
             <Field name="subject">
               <FieldLabel>주제</FieldLabel>
               <FieldDescription>최소 10자 이상 입력해야 합니다.</FieldDescription>
-              <Input name="subject" placeholder="멘토링 주제를 입력하세요" defaultValue={searchParams.get('subject') ?? ''} />
+              <Input
+                name="subject"
+                placeholder="멘토링 주제를 입력하세요"
+                defaultValue={searchParams.get('subject') ?? ''}
+              />
             </Field>
 
             <Field name="content">
@@ -272,15 +286,13 @@ export function ReportCreateForm() {
                   <Button type="button" variant="secondary" onClick={() => fileInputRef.current?.click()}>
                     파일 선택
                   </Button>
-                  {files.length === 0 && (
-                    <span className="text-sm text-foreground-muted">선택된 파일 없음</span>
-                  )}
+                  {files.length === 0 && <span className="text-sm text-foreground-muted">선택된 파일 없음</span>}
                 </div>
                 {files.length > 0 && (
                   <ul className="space-y-1">
                     {files.map((file, index) => (
                       <li key={`${file.name}-${index}`} className="flex items-center gap-2 text-sm">
-                        <span className="text-foreground truncate max-w-xs">{file.name}</span>
+                        <span className="max-w-xs truncate text-foreground">{file.name}</span>
                         <Button
                           type="button"
                           variant="ghost"

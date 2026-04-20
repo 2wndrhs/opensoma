@@ -73,7 +73,10 @@ export default async function MentoringDetailPage({ params }: PageProps) {
                 <span className="text-sm text-foreground-muted">{mentoring.type}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Link href={`/report/new?${reportParams}`} className={buttonVariants({ variant: 'primary', size: 'sm' })}>
+                <Link
+                  href={`/report/new?${reportParams}`}
+                  className={buttonVariants({ variant: 'primary', size: 'sm' })}
+                >
                   보고서 작성
                 </Link>
                 <form action={`/mentoring/${mentoring.id}/edit`}>

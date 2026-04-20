@@ -15,7 +15,8 @@ const sizes = {
   md: 'px-4 py-2 text-sm h-11',
 } as const
 
-const base = 'inline-flex items-center justify-center rounded-lg font-semibold transition-[color,background-color,border-color] duration-150 focus:outline-none'
+const base =
+  'inline-flex items-center justify-center rounded-lg font-semibold transition-[color,background-color,border-color] duration-150 focus:outline-none'
 
 export function buttonVariants({
   variant = 'primary',
@@ -38,13 +39,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', disabled, ...props }, ref) => (
     <button
       ref={ref}
-      className={cn(
-        base,
-        'disabled:cursor-not-allowed disabled:opacity-50',
-        variants[variant],
-        sizes[size],
-        className,
-      )}
+      className={cn(base, 'disabled:cursor-not-allowed disabled:opacity-50', variants[variant], sizes[size], className)}
       disabled={disabled}
       {...props}
     />

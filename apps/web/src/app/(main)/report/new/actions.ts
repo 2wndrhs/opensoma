@@ -75,7 +75,7 @@ export async function createReport(_prevState: CreateReportState, formData: Form
       evidenceFiles.map(async (f) => ({
         buffer: Buffer.from(await f.arrayBuffer()),
         name: f.name,
-      }))
+      })),
     )
 
     await client.report.create(
