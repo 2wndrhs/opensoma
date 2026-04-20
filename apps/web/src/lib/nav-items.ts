@@ -1,5 +1,14 @@
 import type { Icon } from '@phosphor-icons/react'
-import { CalendarBlank, CalendarDots, ChalkboardTeacher, House, Megaphone, Newspaper, Notebook, Users } from '@phosphor-icons/react'
+import {
+  CalendarBlank,
+  CalendarDots,
+  ChalkboardTeacher,
+  House,
+  Megaphone,
+  Newspaper,
+  Notebook,
+  Users,
+} from '@phosphor-icons/react'
 
 import { buildMentoringUrl } from './mentoring-url'
 
