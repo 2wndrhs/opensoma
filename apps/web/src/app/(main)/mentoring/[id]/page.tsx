@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import React from 'react'
 
@@ -10,6 +9,7 @@ import { requireAuth } from '@/lib/auth'
 import { allVenueItems } from '@/lib/venues'
 import { Button, buttonVariants } from '@/ui/button'
 import { Card, CardContent, CardHeader } from '@/ui/card'
+import Link from '@/ui/link'
 import { Separator } from '@/ui/separator'
 
 interface PageProps {

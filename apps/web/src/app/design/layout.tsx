@@ -27,12 +27,12 @@ import {
   Textbox,
   ListDashes,
 } from '@phosphor-icons/react'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
 
 import { cn } from '@/lib/cn'
 import { useTheme } from '@/lib/theme'
+import Link from '@/ui/link'
 
 const foundations = [
   { path: '/design/colors', label: 'Colors', icon: Palette },

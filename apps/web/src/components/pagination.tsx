@@ -1,10 +1,10 @@
 'use client'
 
-import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 
 import type { Pagination as PaginationType } from '@/lib/sdk'
 import { Button } from '@/ui/button'
+import Link from '@/ui/link'
 
 interface PaginationProps {
   pagination: PaginationType

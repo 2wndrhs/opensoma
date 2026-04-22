@@ -1,7 +1,6 @@
 'use client'
 
 import { CalendarBlank, CheckCircle } from '@phosphor-icons/react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMemo, useRef, useState } from 'react'
 
@@ -12,6 +11,7 @@ import type { RoomCard } from '@/lib/sdk'
 import { Button, buttonVariants } from '@/ui/button'
 import { Card, CardContent } from '@/ui/card'
 import { EmptyState } from '@/ui/empty-state'
+import Link from '@/ui/link'
 
 interface RoomTimelineProps {
   rooms: RoomCard[]

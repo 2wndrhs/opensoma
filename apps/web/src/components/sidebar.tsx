@@ -13,7 +13,6 @@ import {
   User,
   UserCircle,
 } from '@phosphor-icons/react'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import { logout } from '@/app/logout/actions'
@@ -21,6 +20,7 @@ import { useShell } from '@/components/shell-context'
 import { cn } from '@/lib/cn'
 import { navItems } from '@/lib/nav-items'
 import { useTheme } from '@/lib/theme'
+import Link from '@/ui/link'
 import { Menu, MenuContent, MenuItem, MenuLabel, MenuSeparator, MenuTrigger } from '@/ui/menu'
 
 interface SidebarProps {

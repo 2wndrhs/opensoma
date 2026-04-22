@@ -1,6 +1,5 @@
 import { Buildings, CalendarBlank, ChalkboardTeacher, Clock, MapPin, Users } from '@phosphor-icons/react/dist/ssr'
 import type { Metadata } from 'next'
-import Link from 'next/link'
 
 import { StatusBadge } from '@/components/status-badge'
 import { requireAuth } from '@/lib/auth'
@@ -10,6 +9,7 @@ import { convertSwmaestroUrl } from '@/lib/swmaestro-url'
 import { Badge } from '@/ui/badge'
 import { Card, CardContent, CardHeader } from '@/ui/card'
 import { EmptyState } from '@/ui/empty-state'
+import Link from '@/ui/link'
 
 export const metadata: Metadata = {
   title: '대시보드',
