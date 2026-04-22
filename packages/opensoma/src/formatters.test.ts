@@ -17,6 +17,7 @@ import {
   parseReportList,
   parseRoomList,
   parseRoomReservationDetail,
+  parseRoomReservationList,
   parseRoomSlots,
   parseTeamInfo,
 } from './formatters'
@@ -265,6 +266,86 @@ describe('formatters', () => {
       status: 'cancelled',
       statusCode: 'RS002',
     })
+  })
+
+  it('parses the 7-column room reservation list table with rentId, venue, title, and time range', () => {
+    const html = `
+      <div class="bbs-list">
+        <ul class="bbs-total">
+          <li><strong>Total :</strong> 15</li>
+          <li><span>1</span>/2 Page</li>
+        </ul>
+        <table>
+          <thead>
+            <tr>
+              <th>NO.</th><th>회의실 명</th><th>제목</th><th>사용기간</th>
+              <th>작성자</th><th>상태</th><th>등록일</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>15</td>
+              <td><a href="/sw/mypage/itemRent/view.do?rentId=18618&menuNo=200058">스페이스 M1</a></td>
+              <td class="tit">
+                <div class="rel">
+                  <a href="/sw/mypage/itemRent/view.do?rentId=18618&menuNo=200058">멘토 특강</a>
+                  <span class="ab">예약완료</span>
+                </div>
+              </td>
+              <td>2026.05.31 16:00 ~ 17:30</td>
+              <td>전수열</td>
+              <td><span class="label-state y">예약완료</span></td>
+              <td>2026.04.20</td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td><a href="/sw/mypage/itemRent/view.do?rentId=18616&menuNo=200058">스페이스 A3</a></td>
+              <td class="tit">
+                <div class="rel">
+                  <a href="/sw/mypage/itemRent/view.do?rentId=18616&menuNo=200058">자유 멘토링</a>
+                  <span class="ab">예약취소</span>
+                </div>
+              </td>
+              <td>2026.05.31 13:00 ~ 14:30</td>
+              <td>전수열</td>
+              <td><span class="label-state n">예약취소</span></td>
+              <td>2026.04.20</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `
+
+    expect(parseRoomReservationList(html)).toEqual([
+      {
+        rentId: 18618,
+        venue: '스페이스 M1',
+        title: '멘토 특강',
+        date: '2026-05-31',
+        startTime: '16:00',
+        endTime: '17:30',
+        author: '전수열',
+        status: 'confirmed',
+        statusLabel: '예약완료',
+        registeredAt: '2026.04.20',
+      },
+      {
+        rentId: 18616,
+        venue: '스페이스 A3',
+        title: '자유 멘토링',
+        date: '2026-05-31',
+        startTime: '13:00',
+        endTime: '14:30',
+        author: '전수열',
+        status: 'cancelled',
+        statusLabel: '예약취소',
+        registeredAt: '2026.04.20',
+      },
+    ])
+  })
+
+  it('returns an empty reservation list when the 7-column table is missing', () => {
+    expect(parseRoomReservationList('<div>nothing here</div>')).toEqual([])
   })
 
   it('parses the rentTime fragment for room slot availability and reservation info', () => {

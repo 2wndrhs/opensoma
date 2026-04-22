@@ -311,6 +311,122 @@ describe('SomaClient', () => {
     await expect(client.room.cancel(18718)).resolves.toBeUndefined()
   })
 
+  it('lists room reservations filtered by default to confirmed status via itemRent list endpoint', async () => {
+    const listHtml = `
+      <ul class="bbs-total">
+        <li><strong>Total :</strong> 2</li>
+        <li><span>1</span>/1 Page</li>
+      </ul>
+      <table>
+        <thead>
+          <tr><th>NO.</th><th>회의실 명</th><th>제목</th><th>사용기간</th><th>작성자</th><th>상태</th><th>등록일</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>2</td>
+            <td><a href="/sw/mypage/itemRent/view.do?rentId=18618">스페이스 M1</a></td>
+            <td>
+              <div class="rel">
+                <a href="/sw/mypage/itemRent/view.do?rentId=18618">멘토 특강</a>
+                <span>예약완료</span>
+              </div>
+            </td>
+            <td>2026.05.31 16:00 ~ 17:30</td>
+            <td>전수열</td>
+            <td>예약완료</td>
+            <td>2026.04.20</td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td><a href="/sw/mypage/itemRent/view.do?rentId=18616">스페이스 A3</a></td>
+            <td>
+              <div class="rel">
+                <a href="/sw/mypage/itemRent/view.do?rentId=18616">자유 멘토링</a>
+                <span>예약완료</span>
+              </div>
+            </td>
+            <td>2026.05.24 10:00 ~ 11:00</td>
+            <td>전수열</td>
+            <td>예약완료</td>
+            <td>2026.04.15</td>
+          </tr>
+        </tbody>
+      </table>
+    `
+    const { http, calls } = createFakeHttp({
+      identity: { userId: 'user@example.com', userNm: 'Test' },
+      getBody: (path) => (path === '/mypage/itemRent/list.do' ? listHtml : ''),
+    })
+    const client = new SomaClient({ http })
+
+    const result = await client.room.reservations({ startDate: '2026-01-01', endDate: '2026-12-31' })
+
+    expect(calls).toEqual([
+      {
+        method: 'get',
+        path: '/mypage/itemRent/list.do',
+        data: {
+          menuNo: MENU_NO.ROOM,
+          pageIndex: '1',
+          sdate: '2026-01-01',
+          edate: '2026-12-31',
+          searchStat: 'RS001',
+        },
+      },
+    ])
+    expect(result.pagination).toEqual({ total: 2, currentPage: 1, totalPages: 1 })
+    expect(result.items).toEqual([
+      {
+        rentId: 18618,
+        venue: '스페이스 M1',
+        title: '멘토 특강',
+        date: '2026-05-31',
+        startTime: '16:00',
+        endTime: '17:30',
+        author: '전수열',
+        status: 'confirmed',
+        statusLabel: '예약완료',
+        registeredAt: '2026.04.20',
+      },
+      {
+        rentId: 18616,
+        venue: '스페이스 A3',
+        title: '자유 멘토링',
+        date: '2026-05-24',
+        startTime: '10:00',
+        endTime: '11:00',
+        author: '전수열',
+        status: 'confirmed',
+        statusLabel: '예약완료',
+        registeredAt: '2026.04.15',
+      },
+    ])
+  })
+
+  it('omits the searchStat filter when status is "all"', async () => {
+    const { http, calls } = createFakeHttp({
+      identity: { userId: 'user@example.com', userNm: 'Test' },
+      getBody: () => '<ul class="bbs-total"><li>Total : 0</li></ul>',
+    })
+    const client = new SomaClient({ http })
+
+    await client.room.reservations({ status: 'all', page: 3 })
+
+    expect(calls[0]?.data).toEqual({ menuNo: MENU_NO.ROOM, pageIndex: '3' })
+  })
+
+  it('sends searchStat=RS002 when listing cancelled reservations', async () => {
+    const { http, calls } = createFakeHttp({
+      identity: { userId: 'user@example.com', userNm: 'Test' },
+      getBody: () => '<ul class="bbs-total"><li>Total : 0</li></ul>',
+    })
+    const client = new SomaClient({ http })
+
+    await client.room.reservations({ status: 'cancelled' })
+
+    expect(calls[0]?.data).toMatchObject({ searchStat: 'RS002' })
+  })
+
   it('re-raises genuine errors thrown by SomaHttp on room update', async () => {
     const detailHtml = `
       <form id="frm" method="post">

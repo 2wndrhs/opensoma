@@ -16,17 +16,15 @@ export default async function MentoringEditPage({ params }: PageProps) {
   }
 
   const client = await requireAuth()
-  const [mentoring, initialRooms, dashboard] = await Promise.all([
+  const today = new Date().toISOString().slice(0, 10)
+  const yearEnd = `${today.slice(0, 4)}-12-31`
+  const [mentoring, initialRooms, reservations] = await Promise.all([
     client.mentoring.get(mentoringId),
-    client.room.list({ date: new Date().toISOString().slice(0, 10) }),
-    client.dashboard.get(),
+    client.room.list({ date: today }),
+    client.room.reservations({ startDate: today, endDate: yearEnd }),
   ])
 
   return (
-    <MentoringEditForm
-      mentoring={mentoring}
-      initialRooms={initialRooms}
-      existingReservations={dashboard.roomReservations}
-    />
+    <MentoringEditForm mentoring={mentoring} initialRooms={initialRooms} existingReservations={reservations.items} />
   )
 }

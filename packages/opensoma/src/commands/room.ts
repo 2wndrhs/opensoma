@@ -34,6 +34,13 @@ type UpdateOptions = {
   pretty?: boolean
 }
 type CancelOptions = { pretty?: boolean }
+type ReservationsOptions = {
+  status?: string
+  startDate?: string
+  endDate?: string
+  page?: string
+  pretty?: boolean
+}
 
 const ROOM_UPDATE_SUCCESS_PATTERN = /정상적으로|수정하였습니다|수정되었습니다|저장되었습니다|취소되었습니다/
 
@@ -73,6 +80,34 @@ async function listAction(options: ListOptions): Promise<void> {
     )
 
     console.log(formatOutput(enrichedRooms, options.pretty))
+  } catch (error) {
+    handleError(error)
+  }
+}
+
+async function reservationsAction(options: ReservationsOptions): Promise<void> {
+  try {
+    const status = options.status ?? 'confirmed'
+    if (status !== 'confirmed' && status !== 'cancelled' && status !== 'all') {
+      throw new Error(`Invalid --status value: ${status}. Use 'confirmed', 'cancelled', or 'all'.`)
+    }
+
+    const http = await getHttpOrExit()
+    const params: Record<string, string> = {
+      menuNo: MENU_NO.ROOM,
+      pageIndex: options.page ?? '1',
+    }
+    if (options.startDate) params.sdate = options.startDate
+    if (options.endDate) params.edate = options.endDate
+    if (status === 'confirmed') params.searchStat = 'RS001'
+    if (status === 'cancelled') params.searchStat = 'RS002'
+
+    const html = await http.get('/mypage/itemRent/list.do', params)
+    const result = {
+      items: formatters.parseRoomReservationList(html),
+      pagination: formatters.parsePagination(html),
+    }
+    console.log(formatOutput(result, options.pretty))
   } catch (error) {
     handleError(error)
   }
@@ -239,4 +274,14 @@ export const roomCommand = new Command('room')
       .argument('<rentId>', 'Reservation ID returned from view.do')
       .option('--pretty', 'Pretty print JSON output')
       .action(cancelAction),
+  )
+  .addCommand(
+    new Command('reservations')
+      .description("List the user's room reservations")
+      .option('--status <status>', "Filter by status: 'confirmed' (default), 'cancelled', or 'all'")
+      .option('--start-date <date>', 'Earliest reservation date (YYYY-MM-DD)')
+      .option('--end-date <date>', 'Latest reservation date (YYYY-MM-DD)')
+      .option('--page <page>', 'Page number', '1')
+      .option('--pretty', 'Pretty print JSON output')
+      .action(reservationsAction),
   )
