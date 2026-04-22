@@ -651,7 +651,7 @@ export class SomaClient {
 }
 
 function isSuccessAlertMessage(message: string): boolean {
-  return /정상적으로|등록하였습니다|등록되었습니다|수정하였습니다|수정되었습니다|저장되었습니다|완료되었습니다|삭제되었습니다|취소되었습니다/.test(
+  return /정상적으로|등록\s?하였습니다|등록\s?되었습니다|수정\s?하였습니다|수정\s?되었습니다|저장\s?되었습니다|완료\s?되었습니다|삭제\s?되었습니다|취소\s?되었습니다/.test(
     message,
   )
 }
