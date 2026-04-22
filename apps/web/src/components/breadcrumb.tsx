@@ -1,9 +1,9 @@
 'use client'
 
 import { CaretRight } from '@phosphor-icons/react'
-import Link from 'next/link'
 
 import { cn } from '@/lib/cn'
+import Link from '@/ui/link'
 
 interface BreadcrumbItem {
   label: string

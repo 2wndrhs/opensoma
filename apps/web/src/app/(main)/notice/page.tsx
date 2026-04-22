@@ -1,11 +1,11 @@
 import { Megaphone } from '@phosphor-icons/react/dist/ssr'
 import type { Metadata } from 'next'
-import Link from 'next/link'
 
 import { Pagination } from '@/components/pagination'
 import { requireAuth } from '@/lib/auth'
 import { Card, CardContent } from '@/ui/card'
 import { EmptyState } from '@/ui/empty-state'
+import Link from '@/ui/link'
 import { ResponsiveTable } from '@/ui/responsive-table'
 
 export const metadata: Metadata = {

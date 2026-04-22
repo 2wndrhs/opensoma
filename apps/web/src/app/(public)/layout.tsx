@@ -1,7 +1,7 @@
 import { BookOpen, GithubLogo } from '@phosphor-icons/react/dist/ssr'
-import Link from 'next/link'
 
 import { ThemeToggle } from '@/components/theme-toggle'
+import Link from '@/ui/link'
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (

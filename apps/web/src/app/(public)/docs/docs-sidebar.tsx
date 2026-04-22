@@ -1,10 +1,10 @@
 'use client'
 
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import { cn } from '@/lib/cn'
 import type { SidebarSection } from '@/lib/docs'
+import Link from '@/ui/link'
 
 interface DocsSidebarProps {
   sections: SidebarSection[]

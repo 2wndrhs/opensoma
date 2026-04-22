@@ -1,5 +1,6 @@
-import Link from 'next/link'
 import type { AnchorHTMLAttributes, ReactNode, TableHTMLAttributes } from 'react'
+
+import Link from '@/ui/link'
 
 type AnchorProps = AnchorHTMLAttributes<HTMLAnchorElement> & { children?: ReactNode }
 type TableProps = TableHTMLAttributes<HTMLTableElement> & { children?: ReactNode }

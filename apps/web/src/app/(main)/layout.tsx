@@ -1,10 +1,9 @@
-import Link from 'next/link'
-
 import { MobileDrawer } from '@/components/mobile-drawer'
 import { MobileMenuButton } from '@/components/mobile-menu-button'
 import { ShellProvider } from '@/components/shell-context'
 import { Sidebar } from '@/components/sidebar'
 import { getCurrentUser } from '@/lib/auth'
+import Link from '@/ui/link'
 
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser()

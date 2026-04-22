@@ -1,6 +1,5 @@
 import { ArrowRight, Browser, Command, Package, SignIn, Terminal } from '@phosphor-icons/react/dist/ssr'
 import type { Metadata } from 'next'
-import Link from 'next/link'
 
 import { JsonLdScript } from '@/components/json-ld-script'
 import {
@@ -11,6 +10,7 @@ import {
   SITE_TITLE,
   getSiteUrl,
 } from '@/lib/seo'
+import Link from '@/ui/link'
 
 export const metadata: Metadata = {
   title: SITE_PAGE_TITLE,

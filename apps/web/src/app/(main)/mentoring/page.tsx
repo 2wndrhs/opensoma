@@ -1,6 +1,5 @@
 import { ChalkboardTeacher } from '@phosphor-icons/react/dist/ssr'
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { parseSearchQuery } from 'opensoma/shared/utils/mentoring-params'
 
 import { MentoringFilters } from '@/app/(main)/mentoring/components/mentoring-filters'
@@ -10,6 +9,7 @@ import { requireAuth } from '@/lib/auth'
 import { Button } from '@/ui/button'
 import { Card, CardContent } from '@/ui/card'
 import { EmptyState } from '@/ui/empty-state'
+import Link from '@/ui/link'
 import { ResponsiveTable } from '@/ui/responsive-table'
 
 export const metadata: Metadata = {

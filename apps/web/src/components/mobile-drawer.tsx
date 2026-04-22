@@ -1,7 +1,6 @@
 'use client'
 
 import { BookOpenText, GithubLogo, SignOut, User, X } from '@phosphor-icons/react'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef } from 'react'
 
@@ -9,6 +8,7 @@ import { logout } from '@/app/logout/actions'
 import { useShell } from '@/components/shell-context'
 import { cn } from '@/lib/cn'
 import { navItems } from '@/lib/nav-items'
+import Link from '@/ui/link'
 import { Separator } from '@/ui/separator'
 
 interface MobileDrawerProps {
