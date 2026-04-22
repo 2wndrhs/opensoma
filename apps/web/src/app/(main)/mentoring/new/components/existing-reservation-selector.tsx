@@ -1,12 +1,14 @@
 'use client'
 
 import { CalendarBlank, Clock, MapPin } from '@phosphor-icons/react'
-import { useState } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useState, useTransition } from 'react'
 
 import { cn } from '@/lib/cn'
 import type { RoomReservationListItem } from '@/lib/sdk'
 import { Button } from '@/ui/button'
 import { Card, CardContent, CardHeader } from '@/ui/card'
+import { Checkbox } from '@/ui/checkbox'
 import { DatePicker } from '@/ui/date-picker'
 import { EmptyState } from '@/ui/empty-state'
 import { Field, FieldLabel } from '@/ui/field'
@@ -23,15 +25,41 @@ export interface TimelineSelection {
 interface ExistingReservationSelectorProps {
   reservations: RoomReservation[]
   onSelect: (selection: TimelineSelection | null) => void
+  includeCancelled?: boolean
 }
 
-export function ExistingReservationSelector({ reservations, onSelect }: ExistingReservationSelectorProps) {
+export function ExistingReservationSelector({
+  reservations,
+  onSelect,
+  includeCancelled = false,
+}: ExistingReservationSelectorProps) {
+  const pathname = usePathname()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [selectedRentId, setSelectedRentId] = useState<number | null>(null)
   const [filterDate, setFilterDate] = useState('')
+  const [isNavigating, startNavigation] = useTransition()
 
-  const filteredReservations = filterDate ? reservations.filter((r) => r.date === filterDate) : reservations
+  const visibleReservations = includeCancelled ? reservations : reservations.filter((r) => r.status !== 'cancelled')
+
+  const filteredReservations = filterDate
+    ? visibleReservations.filter((r) => r.date === filterDate)
+    : visibleReservations
 
   const sortedReservations = [...filteredReservations].sort((a, b) => b.date.localeCompare(a.date))
+
+  function handleIncludeCancelledChange(checked: boolean) {
+    const next = new URLSearchParams(searchParams.toString())
+    if (checked) {
+      next.set('includeCancelled', 'true')
+    } else {
+      next.delete('includeCancelled')
+    }
+    const query = next.toString()
+    startNavigation(() => {
+      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
+    })
+  }
 
   function handleSelect(reservation: RoomReservation) {
     const selection: TimelineSelection = {
@@ -49,11 +77,19 @@ export function ExistingReservationSelector({ reservations, onSelect }: Existing
     onSelect(null)
   }
 
-  if (reservations.length === 0) {
+  const hasAnyReservations = reservations.length > 0
+  const hasVisibleReservations = visibleReservations.length > 0
+
+  if (!hasAnyReservations) {
     return (
       <Card className="border border-border">
-        <CardContent>
+        <CardContent className="space-y-3">
           <EmptyState icon={CalendarBlank} message="예약된 회의실이 없습니다. 먼저 회의실을 예약해주세요." />
+          <div className="flex justify-center">
+            <Checkbox checked={includeCancelled} disabled={isNavigating} onCheckedChange={handleIncludeCancelledChange}>
+              취소된 예약 포함
+            </Checkbox>
+          </div>
         </CardContent>
       </Card>
     )
@@ -61,10 +97,15 @@ export function ExistingReservationSelector({ reservations, onSelect }: Existing
 
   return (
     <div className="space-y-4">
-      <Field name="filter-date">
-        <FieldLabel>날짜 필터</FieldLabel>
-        <DatePicker value={filterDate} onValueChange={setFilterDate} placeholder="날짜로 필터링" />
-      </Field>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Field name="filter-date" className="min-w-[200px] flex-1">
+          <FieldLabel>날짜 필터</FieldLabel>
+          <DatePicker value={filterDate} onValueChange={setFilterDate} placeholder="날짜로 필터링" />
+        </Field>
+        <Checkbox checked={includeCancelled} disabled={isNavigating} onCheckedChange={handleIncludeCancelledChange}>
+          취소된 예약 포함
+        </Checkbox>
+      </div>
 
       {filterDate && (
         <div className="flex items-center gap-2">
@@ -75,6 +116,17 @@ export function ExistingReservationSelector({ reservations, onSelect }: Existing
             필터 초기화
           </Button>
         </div>
+      )}
+
+      {!hasVisibleReservations && (
+        <Card className="border border-border">
+          <CardContent>
+            <EmptyState
+              icon={CalendarBlank}
+              message="표시할 예약이 없습니다. 모든 예약이 취소되었거나 필터 조건에 맞지 않습니다."
+            />
+          </CardContent>
+        </Card>
       )}
 
       <div className="grid gap-4">

@@ -13,6 +13,7 @@ export default async function MentoringCreatePage({
     endTime: getFirstValue(params.endTime),
     venue: getFirstValue(params.venue),
   }
+  const includeCancelled = getFirstValue(params.includeCancelled) === 'true'
 
   const initialDate = defaultValues.date ?? new Date().toISOString().slice(0, 10)
   const client = await requireAuth()
@@ -20,7 +21,11 @@ export default async function MentoringCreatePage({
   const yearEnd = `${today.slice(0, 4)}-12-31`
   const [initialRooms, reservations] = await Promise.all([
     client.room.list({ date: initialDate, includeReservations: true }),
-    client.room.reservations({ startDate: today, endDate: yearEnd }),
+    client.room.reservations({
+      startDate: today,
+      endDate: yearEnd,
+      status: includeCancelled ? 'all' : 'confirmed',
+    }),
   ])
   const existingReservations = reservations.items
 
@@ -30,6 +35,7 @@ export default async function MentoringCreatePage({
       initialDate={initialDate}
       initialRooms={initialRooms}
       existingReservations={existingReservations}
+      includeCancelled={includeCancelled}
     />
   )
 }

@@ -32,6 +32,7 @@ interface MentoringEditFormProps {
   mentoring: MentoringDetail
   initialRooms: RoomCard[]
   existingReservations: RoomReservation[]
+  includeCancelled?: boolean
 }
 
 const startTimes = createTimeRange(9, 0, 23, 0)
@@ -45,7 +46,12 @@ function mentoringTypeToFormValue(type: string): 'free' | 'lecture' {
   return type === '멘토 특강' ? 'lecture' : 'free'
 }
 
-export function MentoringEditForm({ mentoring, initialRooms, existingReservations }: MentoringEditFormProps) {
+export function MentoringEditForm({
+  mentoring,
+  initialRooms,
+  existingReservations,
+  includeCancelled = false,
+}: MentoringEditFormProps) {
   const initialType = mentoringTypeToFormValue(mentoring.type)
   const boundUpdateMentoring = useCallback(
     (prevState: { error: string }, formData: FormData) => updateMentoring(mentoring.id, prevState, formData),
@@ -191,7 +197,11 @@ export function MentoringEditForm({ mentoring, initialRooms, existingReservation
                       </span>
                     </div>
                   ) : null}
-                  <ExistingReservationSelector reservations={existingReservations} onSelect={handleTimelineSelect} />
+                  <ExistingReservationSelector
+                    reservations={existingReservations}
+                    onSelect={handleTimelineSelect}
+                    includeCancelled={includeCancelled}
+                  />
                 </div>
               ) : mode === 'timeline' ? (
                 <div className="space-y-4">

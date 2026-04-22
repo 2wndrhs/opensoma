@@ -29,6 +29,7 @@ interface MentoringCreateFormProps {
   initialRooms: RoomCard[]
   initialDate: string
   existingReservations: RoomReservation[]
+  includeCancelled?: boolean
   defaultValues?: {
     date?: string
     startTime?: string
@@ -50,6 +51,7 @@ export function MentoringCreateForm({
   initialRooms,
   initialDate,
   existingReservations,
+  includeCancelled = false,
   defaultValues,
 }: MentoringCreateFormProps) {
   const [state, formAction, isPending] = useActionState(createMentoring, initialState)
@@ -191,7 +193,11 @@ export function MentoringCreateForm({
                       </span>
                     </div>
                   ) : null}
-                  <ExistingReservationSelector reservations={existingReservations} onSelect={handleTimelineSelect} />
+                  <ExistingReservationSelector
+                    reservations={existingReservations}
+                    onSelect={handleTimelineSelect}
+                    includeCancelled={includeCancelled}
+                  />
                 </div>
               ) : mode === 'timeline' ? (
                 <div className="space-y-4">
