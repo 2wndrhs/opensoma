@@ -362,8 +362,13 @@ describe('SomaClient', () => {
       eventEtime: '15:30',
       place: '온라인(Webex)',
       applyCnt: '20',
-      bgnde: '2026-04-01',
-      endde: '2026-04-10',
+      bgndeDate: '2026-04-01',
+      bgndeTime: '00:00',
+      enddeDate: '2026-04-11',
+      enddeTime: '14:00',
+      receiptType: 'UNTIL_LECTURE',
+      stateCd: 'A',
+      qustnrAt: 'N',
       qestnarCn: '<p>세션 본문</p>',
     })
   })
