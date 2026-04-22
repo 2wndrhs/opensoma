@@ -173,6 +173,17 @@ export function validateReservationSlots(slots: string[]): void {
   }
 }
 
+// Mirror the native /officeMng/view.do form, which sets rentEndde to
+// `${lastSlot.hour}:${lastSlot.minute + 29}` (see the native JS:
+// `et = last.data('hour')+':'+(last.data('minute')*1+29)`). Last slot '13:30'
+// becomes '13:59'; last slot '12:00' becomes '12:29'. Native does not carry
+// minutes into the hour, so we replicate that string-concat behavior exactly.
+function slotNativeEnd(slot: string): string {
+  const [hourPart, minutePart] = slot.split(':')
+  const minute = Number(minutePart) + 29
+  return `${hourPart}:${String(minute).padStart(2, '0')}`
+}
+
 export function buildRoomReservationPayload(params: {
   roomId: number
   date: string
@@ -190,7 +201,7 @@ export function buildRoomReservationPayload(params: {
     menuNo: MENU_NO.ROOM,
     itemId: String(params.roomId),
     rentBgnde: `${params.date} ${firstSlot}:00`,
-    rentEndde: `${params.date} ${lastSlot}:00`,
+    rentEndde: `${params.date} ${slotNativeEnd(lastSlot)}:00`,
     title: params.title,
     rentDt: params.date,
     rentNum: String(params.attendees ?? 1),
@@ -236,7 +247,7 @@ export function buildRoomUpdatePayload(
   if (params.slots?.length) {
     validateReservationSlots(params.slots)
     startTime = params.slots[0]
-    endTime = params.slots[params.slots.length - 1]
+    endTime = slotNativeEnd(params.slots[params.slots.length - 1])
   }
 
   const payload: Record<string, string> = {
