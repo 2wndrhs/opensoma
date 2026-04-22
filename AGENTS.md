@@ -8,6 +8,18 @@ Runtime: Bun for development, Node.js-compatible output for npm distribution.
 
 **Monorepo Structure**: The publishable npm package is at `packages/opensoma/`. The root is `opensoma-monorepo` (private) and contains the web app at `apps/web/`.
 
+## Source of Truth
+
+**swmaestro.ai is the source of truth. opensoma is a mirror and must faithfully reproduce the native platform's observable behavior.**
+
+This is not a general "prefer the native site" preference — it's a hard directional rule that determines every bug-fix's target:
+
+- If the native site does X and opensoma does Y, **Y is the bug.** Fix opensoma to produce X, even if X looks wrong, awkward, or inconsistent (e.g., times ending in `:59`, off-by-one displays, odd payload shapes). Those are not defects to "correct" — they are the spec.
+- Never "improve on" native behavior. If the native form POSTs `rentEndde = lastSlot:00` and the server renders it as `:59`, opensoma must POST the same value and accept the same `:59` render. Sending a "cleaner" value (e.g., `lastSlot + 30min`) is a regression, not a fix.
+- Before fixing any behavioral deviation: **first determine which side is native and which is ours.** Inspect the native site (screenshot, DevTools, network tab) and compare to opensoma's output. Confirm direction before writing code. Reversing the direction ships the bug harder.
+- When the native behavior is unknown or unverifiable, do **not** guess. Ask the user, or inspect the live swmaestro.ai site empirically (Network tab, request payloads, rendered DOM). Do not infer from opensoma's current behavior — that's the side under suspicion.
+- The fix location is almost always the request we send to swmaestro.ai (payloads, headers, URL params), not the rendering or parsing of responses. The server is the renderer; we are the client replicating the native client.
+
 ## Commands
 
 ```bash
