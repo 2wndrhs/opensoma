@@ -40,6 +40,8 @@ import type {
   ReportUpdateOptions,
   RoomCard,
   RoomReservationDetail,
+  RoomReservationListItem,
+  RoomReservationStatus,
   RoomUpdateOptions,
   ScheduleListItem,
   TeamInfo,
@@ -103,6 +105,12 @@ export class SomaClient {
     get(rentId: number): Promise<RoomReservationDetail>
     update(rentId: number, params?: RoomUpdateOptions): Promise<void>
     cancel(rentId: number): Promise<void>
+    reservations(options?: {
+      status?: RoomReservationStatus | 'all'
+      startDate?: string
+      endDate?: string
+      page?: number
+    }): Promise<{ items: RoomReservationListItem[]; pagination: Pagination }>
   }
 
   readonly dashboard: {
@@ -311,6 +319,24 @@ export class SomaClient {
         await this.requireAuth()
         const existing = await this.room.get(rentId)
         await this.postRoomUpdate(buildRoomCancelPayload(existing))
+      },
+      reservations: async (options) => {
+        await this.requireAuth()
+        const params: Record<string, string> = {
+          menuNo: MENU_NO.ROOM,
+          pageIndex: String(options?.page ?? 1),
+        }
+        if (options?.startDate) params.sdate = options.startDate
+        if (options?.endDate) params.edate = options.endDate
+        const status = options?.status ?? 'confirmed'
+        if (status !== 'all') {
+          params.searchStat = status === 'cancelled' ? 'RS002' : 'RS001'
+        }
+        const html = await this.http.get('/mypage/itemRent/list.do', params)
+        return {
+          items: formatters.parseRoomReservationList(html),
+          pagination: formatters.parsePagination(html),
+        }
       },
     }
 

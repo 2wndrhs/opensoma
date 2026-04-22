@@ -30,6 +30,8 @@ import {
   RoomCardSchema,
   type RoomReservationDetail,
   RoomReservationDetailSchema,
+  type RoomReservationListItem,
+  RoomReservationListItemSchema,
   type RoomReservationStatus,
   type ScheduleListItem,
   ScheduleListItemSchema,
@@ -181,6 +183,43 @@ function resolveReservationStatus(code: string): RoomReservationStatus {
   if (code === 'RS001') return 'confirmed'
   if (code === 'RS002') return 'cancelled'
   return 'unknown'
+}
+
+export function parseRoomReservationList(html: string): RoomReservationListItem[] {
+  return findTableRows(html, 7).map((cells) => {
+    const venueLink = cells[1]?.querySelector('a')
+    const rentId = extractUrlParam(venueLink?.getAttribute('href'), 'rentId')
+    const titleLink = cells[2]?.querySelector('.rel a')
+    const periodText = cleanText(cells[3])
+    const statusLabel = cleanText(cells[5])
+
+    return RoomReservationListItemSchema.parse({
+      rentId,
+      venue: cleanText(venueLink ?? cells[1]),
+      title: cleanText(titleLink),
+      date: extractFirstDate(periodText),
+      startTime: extractReservationStartTime(periodText),
+      endTime: extractReservationEndTime(periodText),
+      author: cleanText(cells[4]),
+      status: statusLabelToStatus(statusLabel),
+      statusLabel,
+      registeredAt: cleanText(cells[6]),
+    })
+  })
+}
+
+function statusLabelToStatus(label: string): RoomReservationStatus {
+  if (label.includes('예약완료')) return 'confirmed'
+  if (label.includes('예약취소') || label.includes('취소')) return 'cancelled'
+  return 'unknown'
+}
+
+function extractReservationStartTime(text: string): string {
+  return text.match(/\d{2}:\d{2}/)?.[0] ?? ''
+}
+
+function extractReservationEndTime(text: string): string {
+  return text.match(/\d{2}:\d{2}/g)?.[1] ?? ''
 }
 
 export function parseDashboard(html: string): Dashboard {

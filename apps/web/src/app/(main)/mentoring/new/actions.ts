@@ -146,26 +146,3 @@ export async function reserveRoomFromMentoring(params: {
     title: params.title,
   })
 }
-
-export async function fetchRoomReservations(): Promise<
-  Array<{
-    title: string
-    url: string
-    status: string
-    date?: string
-    time?: string
-    venue?: string
-    timeEnd?: string
-  }>
-> {
-  try {
-    const client = await createClient()
-    const dashboard = await client.dashboard.get()
-    return dashboard.roomReservations
-  } catch (error) {
-    if (error instanceof AuthenticationError) {
-      redirect('/logout')
-    }
-    throw error
-  }
-}

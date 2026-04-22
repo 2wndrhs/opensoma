@@ -4,21 +4,14 @@ import { CalendarBlank, Clock, MapPin } from '@phosphor-icons/react'
 import { useState } from 'react'
 
 import { cn } from '@/lib/cn'
+import type { RoomReservationListItem } from '@/lib/sdk'
 import { Button } from '@/ui/button'
 import { Card, CardContent, CardHeader } from '@/ui/card'
 import { DatePicker } from '@/ui/date-picker'
 import { EmptyState } from '@/ui/empty-state'
 import { Field, FieldLabel } from '@/ui/field'
 
-export interface RoomReservation {
-  title: string
-  url: string
-  status: string
-  date?: string
-  time?: string
-  venue?: string
-  timeEnd?: string
-}
+export type RoomReservation = RoomReservationListItem
 
 export interface TimelineSelection {
   roomId: number
@@ -33,58 +26,26 @@ interface ExistingReservationSelectorProps {
 }
 
 export function ExistingReservationSelector({ reservations, onSelect }: ExistingReservationSelectorProps) {
-  const [selectedUrl, setSelectedUrl] = useState<string | null>(null)
+  const [selectedRentId, setSelectedRentId] = useState<number | null>(null)
   const [filterDate, setFilterDate] = useState('')
 
   const filteredReservations = filterDate ? reservations.filter((r) => r.date === filterDate) : reservations
 
-  const sortedReservations = [...filteredReservations].sort((a, b) => {
-    const dateA = a.date || ''
-    const dateB = b.date || ''
-    return dateB.localeCompare(dateA)
-  })
+  const sortedReservations = [...filteredReservations].sort((a, b) => b.date.localeCompare(a.date))
 
   function handleSelect(reservation: RoomReservation) {
-    if (!reservation.venue || !reservation.date || !reservation.time) {
-      return
-    }
-
-    const timeMatch = reservation.time.match(/(\d{2}:\d{2})(?:~(\d{2}:\d{2}))?/)
-    const startTime = timeMatch?.[1] || reservation.time
-    const endTime = timeMatch?.[2] || reservation.timeEnd
-
-    if (!endTime) {
-      const [hours, minutes] = startTime.split(':').map(Number)
-      const endHour = hours + Math.floor((minutes + 30) / 60)
-      const endMinute = (minutes + 30) % 60
-      const calculatedEndTime = `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`
-
-      const selection: TimelineSelection & { endTime: string } = {
-        roomId: 0,
-        roomName: reservation.venue,
-        date: reservation.date,
-        selectedSlots: [startTime],
-        endTime: calculatedEndTime,
-      }
-      setSelectedUrl(reservation.url)
-      onSelect(selection)
-      return
-    }
-
-    const slots = calculateSlots(startTime, endTime)
-
     const selection: TimelineSelection = {
       roomId: 0,
       roomName: reservation.venue,
       date: reservation.date,
-      selectedSlots: slots,
+      selectedSlots: calculateSlots(reservation.startTime, reservation.endTime),
     }
-    setSelectedUrl(reservation.url)
+    setSelectedRentId(reservation.rentId)
     onSelect(selection)
   }
 
   function handleClear() {
-    setSelectedUrl(null)
+    setSelectedRentId(null)
     onSelect(null)
   }
 
@@ -118,14 +79,12 @@ export function ExistingReservationSelector({ reservations, onSelect }: Existing
 
       <div className="grid gap-4">
         {sortedReservations.map((reservation) => {
-          const isSelected = selectedUrl === reservation.url
-          const hasRequiredInfo = reservation.venue && reservation.date && reservation.time
+          const isSelected = selectedRentId === reservation.rentId
 
           return (
             <button
-              key={reservation.url}
+              key={reservation.rentId}
               type="button"
-              disabled={!hasRequiredInfo}
               onClick={() => handleSelect(reservation)}
               className="w-full text-left"
             >
@@ -133,7 +92,6 @@ export function ExistingReservationSelector({ reservations, onSelect }: Existing
                 className={cn(
                   'border transition-colors duration-150',
                   isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50',
-                  !hasRequiredInfo && 'cursor-not-allowed opacity-50',
                 )}
               >
                 <CardHeader className="pb-2">
@@ -143,42 +101,32 @@ export function ExistingReservationSelector({ reservations, onSelect }: Existing
                       <span
                         className={cn(
                           'mt-1 inline-block rounded px-2 py-0.5 text-xs',
-                          reservation.status === '예약완료'
+                          reservation.status === 'confirmed'
                             ? 'bg-success/10 text-success'
                             : 'bg-warning/10 text-warning',
                         )}
                       >
-                        {reservation.status}
+                        {reservation.statusLabel}
                       </span>
                     </div>
                     {isSelected && <span className="text-lg">✓</span>}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-2 pt-0">
-                  {reservation.venue && (
-                    <div className="flex items-center gap-2 text-sm text-foreground-muted">
-                      <MapPin className="size-4" />
-                      <span>{reservation.venue}</span>
-                    </div>
-                  )}
-                  {reservation.date && (
-                    <div className="flex items-center gap-2 text-sm text-foreground-muted">
-                      <CalendarBlank className="size-4" />
-                      <span>{reservation.date}</span>
-                    </div>
-                  )}
-                  {reservation.time && (
-                    <div className="flex items-center gap-2 text-sm text-foreground-muted">
-                      <Clock className="size-4" />
-                      <span>
-                        {reservation.time}
-                        {reservation.timeEnd && ` ~ ${reservation.timeEnd}`}
-                      </span>
-                    </div>
-                  )}
-                  {!hasRequiredInfo && (
-                    <p className="text-xs text-danger">장소, 날짜 또는 시간 정보가 부족하여 선택할 수 없습니다.</p>
-                  )}
+                  <div className="flex items-center gap-2 text-sm text-foreground-muted">
+                    <MapPin className="size-4" />
+                    <span>{reservation.venue}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-foreground-muted">
+                    <CalendarBlank className="size-4" />
+                    <span>{reservation.date}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-foreground-muted">
+                    <Clock className="size-4" />
+                    <span>
+                      {reservation.startTime} ~ {reservation.endTime}
+                    </span>
+                  </div>
                 </CardContent>
               </Card>
             </button>
@@ -186,7 +134,7 @@ export function ExistingReservationSelector({ reservations, onSelect }: Existing
         })}
       </div>
 
-      {selectedUrl && (
+      {selectedRentId !== null && (
         <div className="flex justify-end">
           <Button type="button" variant="ghost" onClick={handleClear}>
             선택 해제

@@ -81,6 +81,20 @@ export const RoomReservationDetailSchema = z.object({
 })
 export type RoomReservationDetail = z.infer<typeof RoomReservationDetailSchema>
 
+export const RoomReservationListItemSchema = z.object({
+  rentId: z.number(),
+  venue: z.string(),
+  title: z.string(),
+  date: z.string(),
+  startTime: z.string(),
+  endTime: z.string(),
+  author: z.string(),
+  status: RoomReservationStatusSchema,
+  statusLabel: z.string(),
+  registeredAt: z.string(),
+})
+export type RoomReservationListItem = z.infer<typeof RoomReservationListItemSchema>
+
 export const RoomUpdateOptionsSchema = z.object({
   title: z.string().optional(),
   roomId: z.number().optional(),
