@@ -12,7 +12,6 @@ import {
   buildMentoringPayload,
   buildUpdateMentoringPayload,
   type ReceiptType,
-  toMentoringType,
 } from '../shared/utils/swmaestro'
 import { getHttpOrExit } from './helpers'
 
@@ -141,28 +140,30 @@ async function updateAction(id: string, options: UpdateOptions): Promise<void> {
   try {
     const http = await getHttpOrExit()
     const numId = Number.parseInt(id, 10)
-    const html = await http.get('/mypage/mentoLec/view.do', {
-      menuNo: MENU_NO.MENTORING,
-      qustnrSn: id,
-    })
-    const existing = formatters.parseMentoringDetail(html, numId)
+
+    const [editHtml, viewHtml] = await Promise.all([
+      http.get('/mypage/mentoLec/forUpdate.do', { menuNo: MENU_NO.MENTORING, qustnrSn: id }),
+      http.get('/mypage/mentoLec/view.do', { menuNo: MENU_NO.MENTORING, qustnrSn: id }),
+    ])
+    const existing = formatters.parseMentoringEditForm(editHtml, numId)
+    const existingContent = formatters.parseMentoringDetail(viewHtml, numId).content
 
     await http.postForm(
       '/mypage/mentoLec/update.do',
       buildUpdateMentoringPayload(numId, {
         title: options.title ?? existing.title,
-        type: options.type ?? toMentoringType(existing.type),
-        date: options.date ?? existing.sessionDate,
-        startTime: options.start ?? existing.sessionTime.start,
-        endTime: options.end ?? existing.sessionTime.end,
-        venue: options.venue ?? existing.venue,
-        maxAttendees: options.maxAttendees ? Number.parseInt(options.maxAttendees, 10) : existing.attendees.max,
-        regStart: options.regStart ?? existing.registrationPeriod.start,
-        regStartTime: options.regStartTime,
-        regEnd: options.regEnd ?? existing.registrationPeriod.end,
-        regEndTime: options.regEndTime,
-        receiptType: parseReceiptType(options.receiptType),
-        content: options.content ?? existing.content,
+        type: options.type ?? (existing.reportCd === 'MRC020' ? 'lecture' : 'public'),
+        date: options.date ?? existing.eventDt,
+        startTime: options.start ?? existing.eventStime,
+        endTime: options.end ?? existing.eventEtime,
+        venue: options.venue ?? existing.place,
+        maxAttendees: options.maxAttendees ? Number.parseInt(options.maxAttendees, 10) : existing.applyCnt,
+        receiptType: parseReceiptType(options.receiptType) ?? existing.receiptType,
+        regStart: options.regStart ?? existing.bgndeDate,
+        regStartTime: options.regStartTime ?? existing.bgndeTime,
+        regEnd: options.regEnd ?? existing.enddeDate,
+        regEndTime: options.regEndTime ?? existing.enddeTime,
+        content: options.content ?? existingContent,
       }),
     )
     console.log(formatOutput({ ok: true }, options.pretty))
