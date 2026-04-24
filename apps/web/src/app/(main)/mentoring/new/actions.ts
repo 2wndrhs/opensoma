@@ -25,7 +25,9 @@ export async function createMentoring(
   const receiptTypeRaw = String(formData.get('receiptType') ?? '')
   const receiptType: 'UNTIL_LECTURE' | 'DIRECT' = receiptTypeRaw === 'DIRECT' ? 'DIRECT' : 'UNTIL_LECTURE'
   const regStart = String(formData.get('regStart') ?? '')
+  const regStartTime = String(formData.get('regStartTime') ?? '')
   const regEnd = String(formData.get('regEnd') ?? '')
+  const regEndTime = String(formData.get('regEndTime') ?? '')
   const content = String(formData.get('content') ?? '').trim()
 
   if (!title || !type || !date || !startTime || !endTime || !venue || !maxAttendees) {
@@ -47,8 +49,17 @@ export async function createMentoring(
     return { error: '종료 시간은 시작 시간보다 늦어야 합니다.' }
   }
 
-  if (receiptType === 'DIRECT' && !regEnd) {
-    return { error: '접수 종료일을 선택해주세요.' }
+  if (regStart && !regStartTime) {
+    return { error: '접수 시작 시간을 선택해주세요.' }
+  }
+  if (regStartTime && !regStart) {
+    return { error: '접수 시작일을 선택해주세요.' }
+  }
+
+  if (receiptType === 'DIRECT') {
+    if (!regEnd || !regEndTime) {
+      return { error: '접수 종료일과 시간을 모두 선택해주세요.' }
+    }
   }
 
   const emojiRegex =
@@ -79,7 +90,9 @@ export async function createMentoring(
       maxAttendees: maxAttendeesNumber,
       receiptType,
       regStart: regStart || undefined,
+      regStartTime: regStartTime || undefined,
       regEnd: receiptType === 'DIRECT' ? regEnd || undefined : undefined,
+      regEndTime: receiptType === 'DIRECT' ? regEndTime || undefined : undefined,
       content: content || undefined,
     })
 
