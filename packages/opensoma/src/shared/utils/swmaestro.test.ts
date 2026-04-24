@@ -27,11 +27,17 @@ describe('resolveVenue', () => {
     expect(resolveVenue('광화문점')).toBe('토즈-광화문점')
     expect(resolveVenue('양재점')).toBe('토즈-양재점')
     expect(resolveVenue('강남컨퍼런스센터점')).toBe('토즈-강남컨퍼런스센터점')
-    expect(resolveVenue('건대점')).toBe('토즈-건대점')
     expect(resolveVenue('강남역토즈타워점')).toBe('토즈-강남역토즈타워점')
     expect(resolveVenue('선릉점')).toBe('토즈-선릉점')
-    expect(resolveVenue('역삼점')).toBe('토즈-역삼점')
-    expect(resolveVenue('홍대점')).toBe('토즈-홍대점')
+  })
+
+  it('preserves trailing spaces that native ships for 건대/역삼/홍대 <option> values', () => {
+    expect(resolveVenue('건대점')).toBe('토즈-건대점 ')
+    expect(resolveVenue('역삼점')).toBe('토즈-역삼점 ')
+    expect(resolveVenue('홍대점')).toBe('토즈-홍대점 ')
+    expect(resolveVenue('토즈-건대점')).toBe('토즈-건대점 ')
+    expect(resolveVenue('토즈-역삼점')).toBe('토즈-역삼점 ')
+    expect(resolveVenue('토즈-홍대점')).toBe('토즈-홍대점 ')
   })
 
   it('passes through TOZ locations that already have the prefix', () => {
