@@ -325,9 +325,11 @@ export function MentoringCreateForm({
               <Field name="maxAttendees">
                 <FieldLabel>모집 인원</FieldLabel>
                 <Input
-                  min={isLecture ? 6 : 1}
+                  required
+                  min={isLecture ? 6 : 2}
+                  max={isLecture ? undefined : 5}
                   name="maxAttendees"
-                  placeholder={isLecture ? '최소 6명' : '예: 6'}
+                  placeholder={isLecture ? '최소 6명' : '2~5명'}
                   type="number"
                 />
               </Field>

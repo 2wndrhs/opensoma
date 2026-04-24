@@ -26,8 +26,19 @@ export async function createMentoring(
   const regEnd = String(formData.get('regEnd') ?? '')
   const content = String(formData.get('content') ?? '').trim()
 
-  if (!title || !type || !date || !startTime || !endTime || !venue) {
+  if (!title || !type || !date || !startTime || !endTime || !venue || !maxAttendees) {
     return { error: '필수 항목을 모두 입력해주세요.' }
+  }
+
+  const maxAttendeesNumber = Number(maxAttendees)
+  if (!Number.isFinite(maxAttendeesNumber) || maxAttendeesNumber <= 0) {
+    return { error: '모집 인원을 올바르게 입력해주세요.' }
+  }
+  if (type === 'lecture' && maxAttendeesNumber < 6) {
+    return { error: '멘토 특강은 최소 6명 이상이어야 합니다.' }
+  }
+  if (type !== 'lecture' && (maxAttendeesNumber < 2 || maxAttendeesNumber > 5)) {
+    return { error: '자유 멘토링은 2명 이상 5명 이하로 설정해주세요.' }
   }
 
   if (startTime >= endTime) {
@@ -59,7 +70,7 @@ export async function createMentoring(
       startTime,
       endTime,
       venue,
-      maxAttendees: maxAttendees ? Number(maxAttendees) : undefined,
+      maxAttendees: maxAttendeesNumber,
       regStart: regStart || undefined,
       regEnd: regEnd || undefined,
       content: content || undefined,
