@@ -692,6 +692,42 @@ describe('SomaClient', () => {
     })
   })
 
+  it('exhausts mentoring pagination so dashboard sessions span all pages', async () => {
+    const buildMentoringRow = (id: number, sessionDate: string) =>
+      `<tr><td>1</td><td><a href="/sw/mypage/mentoLec/view.do?qustnrSn=${id}">[멘토 특강] 세션 ${id} [접수중]</a></td><td>${sessionDate} ~ ${sessionDate}</td><td>${sessionDate}(목) 10:00 ~ 11:00</td><td>1 /4</td><td>OK</td><td>[접수중]</td><td>전수열</td><td>${sessionDate}</td></tr>`
+    const buildPaginatedListBody = (rows: string, currentPage: number, totalPages: number, total: number) =>
+      `<table><tbody>${rows}</tbody></table><ul class="bbs-total"><li>Total : ${total}</li><li>${currentPage}/${totalPages} Page</li></ul>`
+    const { http, calls } = createFakeHttp({
+      identity: { userId: 'neo@example.com', userNm: '전수열' },
+      getBody: (path, data) => {
+        if (path === '/mypage/myMain/dashboard.do') {
+          return ''
+        }
+        if (path === '/mypage/mentoLec/list.do') {
+          const page = Number(data?.pageIndex ?? '1')
+          if (page === 1) return buildPaginatedListBody(buildMentoringRow(101, '2026-04-03'), 1, 3, 3)
+          if (page === 2) return buildPaginatedListBody(buildMentoringRow(102, '2026-04-10'), 2, 3, 3)
+          if (page === 3) return buildPaginatedListBody(buildMentoringRow(103, '2026-04-17'), 3, 3, 3)
+        }
+        return ''
+      },
+    })
+    const client = new SomaClient({ http })
+
+    const dashboard = await client.dashboard.get()
+
+    expect(dashboard.mentoringSessions.map((s) => s.url)).toEqual([
+      '/mypage/mentoLec/view.do?qustnrSn=101',
+      '/mypage/mentoLec/view.do?qustnrSn=102',
+      '/mypage/mentoLec/view.do?qustnrSn=103',
+    ])
+    const listPages = calls
+      .filter((c) => c.path === '/mypage/mentoLec/list.do')
+      .map((c) => c.data?.pageIndex ?? '1')
+      .sort()
+    expect(listPages).toEqual(['1', '2', '3'])
+  })
+
   it('delegates login and isLoggedIn to SomaHttp', async () => {
     const loginCalls: string[] = []
     const { http } = createFakeHttp({

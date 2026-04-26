@@ -141,8 +141,10 @@ function MentoringCard({
   typeFilter?: string
 }) {
   const today = new Date().toISOString().slice(0, 10)
+  const currentMonth = today.slice(0, 7)
   const totalHours = items.reduce((sum, item) => {
     if (!item.time || !item.timeEnd) return sum
+    if (!item.date?.startsWith(currentMonth)) return sum
     const start = parseTime(item.time)
     const end = parseTime(item.timeEnd)
     return sum + (end - start)
