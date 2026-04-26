@@ -354,10 +354,18 @@ export class SomaClient {
     this.dashboard = {
       get: async () => {
         await this.requireAuth()
-        const [dashboard, { items: myMentoring }] = await Promise.all([
+        const search = { field: 'author' as const, value: '@me', me: true }
+        const [dashboard, firstPage] = await Promise.all([
           formatters.parseDashboard(await this.http.get('/mypage/myMain/dashboard.do', { menuNo: MENU_NO.DASHBOARD })),
-          this.mentoring.list({ search: { field: 'author', value: '@me', me: true } }),
+          this.mentoring.list({ search }),
         ])
+        // Exhaust pagination: dashboard time totals must span the whole month, not just page 1.
+        const remainingPages = await Promise.all(
+          Array.from({ length: Math.max(0, firstPage.pagination.totalPages - 1) }, (_, i) =>
+            this.mentoring.list({ search, page: i + 2 }),
+          ),
+        )
+        const myMentoring = [firstPage, ...remainingPages].flatMap((p) => p.items)
         dashboard.mentoringSessions = myMentoring.map((item) => ({
           title: item.title,
           url: `/mypage/mentoLec/view.do?qustnrSn=${item.id}`,

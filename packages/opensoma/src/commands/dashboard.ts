@@ -14,12 +14,19 @@ async function showAction(options: ShowOptions): Promise<void> {
     const http = await getHttpOrExit()
     const user = (await http.checkLogin()) ?? undefined
     const search = { field: 'author' as const, value: '@me', me: true }
-    const [dashboardHtml, mentoringHtml] = await Promise.all([
+    const [dashboardHtml, firstMentoringHtml] = await Promise.all([
       http.get('/mypage/myMain/dashboard.do', { menuNo: MENU_NO.DASHBOARD }),
       http.get('/mypage/mentoLec/list.do', buildMentoringListParams({ search, user })),
     ])
     const dashboard = formatters.parseDashboard(dashboardHtml)
-    const myMentoring = formatters.parseMentoringList(mentoringHtml)
+    const firstPagination = formatters.parsePagination(firstMentoringHtml)
+    // Exhaust pagination: dashboard time totals must span the whole month, not just page 1.
+    const remainingHtml = await Promise.all(
+      Array.from({ length: Math.max(0, firstPagination.totalPages - 1) }, (_, i) =>
+        http.get('/mypage/mentoLec/list.do', buildMentoringListParams({ search, user, page: i + 2 })),
+      ),
+    )
+    const myMentoring = [firstMentoringHtml, ...remainingHtml].flatMap((html) => formatters.parseMentoringList(html))
     dashboard.mentoringSessions = myMentoring.map((item) => ({
       title: item.title,
       url: `/mypage/mentoLec/view.do?qustnrSn=${item.id}`,
