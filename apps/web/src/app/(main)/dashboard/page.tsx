@@ -94,9 +94,18 @@ function TeamInfoCard({ team }: { team?: { name: string; members: string; mentor
               <span className="text-sm text-foreground-muted">팀명</span>
               <span className="font-semibold text-foreground">{team.name}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-foreground-muted">멘토</span>
-              <span className="font-semibold text-foreground">{team.mentor}</span>
+            <div className="flex items-start justify-between gap-3">
+              <span className="shrink-0 text-sm text-foreground-muted">멘토</span>
+              <div className="flex flex-wrap justify-end gap-2">
+                {team.mentor.split(',').map((mentor) => {
+                  const trimmed = mentor.trim()
+                  return (
+                    <Badge key={trimmed} variant="default">
+                      {trimmed}
+                    </Badge>
+                  )
+                })}
+              </div>
             </div>
             <div className="flex items-start justify-between gap-3">
               <span className="shrink-0 text-sm text-foreground-muted">팀원</span>
