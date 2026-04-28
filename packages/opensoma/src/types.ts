@@ -208,6 +208,7 @@ export const ApplicationHistoryItemSchema = z.object({
   id: z.number(),
   category: z.string(),
   title: z.string(),
+  url: z.string().optional(),
   author: z.string(),
   sessionDate: z.string(),
   appliedAt: z.string(),

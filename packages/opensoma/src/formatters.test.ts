@@ -744,6 +744,7 @@ describe('formatters', () => {
         id: 1,
         category: '멘토 특강',
         title: '웹 성능 특강',
+        url: '/sw/mypage/mentoLec/view.do?qustnrSn=9572',
         author: '전수열',
         sessionDate: '2026-04-11',
         appliedAt: '2026.04.02',
