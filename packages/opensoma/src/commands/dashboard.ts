@@ -1,38 +1,34 @@
 import { Command } from 'commander'
 
-import { MENU_NO } from '../constants'
-import * as formatters from '../formatters'
+import { SomaClient } from '../client'
+import type { SomaHttp } from '../http'
 import { handleError } from '../shared/utils/error-handler'
-import { buildMentoringListParams } from '../shared/utils/mentoring-params'
 import { formatOutput } from '../shared/utils/output'
 import { getHttpOrExit } from './helpers'
 
-type ShowOptions = { pretty?: boolean }
+export type ShowOptions = { pretty?: boolean }
+
+type DashboardClient = Pick<SomaClient, 'dashboard'>
+
+interface ShowDashboardDeps {
+  getHttp?: () => Promise<SomaHttp>
+  createClient?: (http: SomaHttp) => DashboardClient
+  write?: (output: string) => void
+}
+
+export async function showDashboard(options: ShowOptions, deps: ShowDashboardDeps = {}): Promise<void> {
+  const getHttp = deps.getHttp ?? getHttpOrExit
+  const createClient = deps.createClient ?? ((http) => new SomaClient({ http }))
+  const write = deps.write ?? ((output) => console.log(output))
+
+  const http = await getHttp()
+  const dashboard = await createClient(http).dashboard.get()
+  write(formatOutput(dashboard, options.pretty))
+}
 
 async function showAction(options: ShowOptions): Promise<void> {
   try {
-    const http = await getHttpOrExit()
-    const user = (await http.checkLogin()) ?? undefined
-    const search = { field: 'author' as const, value: '@me', me: true }
-    const [dashboardHtml, firstMentoringHtml] = await Promise.all([
-      http.get('/mypage/myMain/dashboard.do', { menuNo: MENU_NO.DASHBOARD }),
-      http.get('/mypage/mentoLec/list.do', buildMentoringListParams({ search, user })),
-    ])
-    const dashboard = formatters.parseDashboard(dashboardHtml)
-    const firstPagination = formatters.parsePagination(firstMentoringHtml)
-    // Exhaust pagination: dashboard time totals must span the whole month, not just page 1.
-    const remainingHtml = await Promise.all(
-      Array.from({ length: Math.max(0, firstPagination.totalPages - 1) }, (_, i) =>
-        http.get('/mypage/mentoLec/list.do', buildMentoringListParams({ search, user, page: i + 2 })),
-      ),
-    )
-    const myMentoring = [firstMentoringHtml, ...remainingHtml].flatMap((html) => formatters.parseMentoringList(html))
-    dashboard.mentoringSessions = myMentoring.map((item) => ({
-      title: item.title,
-      url: `/mypage/mentoLec/view.do?qustnrSn=${item.id}`,
-      status: item.status,
-    }))
-    console.log(formatOutput(dashboard, options.pretty))
+    await showDashboard(options)
   } catch (error) {
     handleError(error)
   }

@@ -358,11 +358,27 @@ export class SomaClient {
     this.dashboard = {
       get: async () => {
         await this.requireAuth()
+        const dashboard = formatters.parseDashboard(
+          await this.http.get('/mypage/myMain/dashboard.do', { menuNo: MENU_NO.DASHBOARD }),
+        )
+        if (isTraineeRole(dashboard.role)) {
+          const firstPage = await this.mentoring.history()
+          const remainingPages = await Promise.all(
+            Array.from({ length: Math.max(0, firstPage.pagination.totalPages - 1) }, (_, i) =>
+              this.mentoring.history({ page: i + 2 }),
+            ),
+          )
+          const historyItems = [firstPage, ...remainingPages].flatMap((p) => p.items)
+          dashboard.mentoringSessions = sortDashboardMentoringItems(
+            historyItems
+              .map(applicationHistoryToDashboardItem)
+              .filter((item): item is Dashboard['mentoringSessions'][number] => item !== null),
+          )
+          return dashboard
+        }
+
         const search = { field: 'author' as const, value: '@me', me: true }
-        const [dashboard, firstPage] = await Promise.all([
-          formatters.parseDashboard(await this.http.get('/mypage/myMain/dashboard.do', { menuNo: MENU_NO.DASHBOARD })),
-          this.mentoring.list({ search }),
-        ])
+        const firstPage = await this.mentoring.list({ search })
         // Exhaust pagination: dashboard time totals must span the whole month, not just page 1.
         const remainingPages = await Promise.all(
           Array.from({ length: Math.max(0, firstPage.pagination.totalPages - 1) }, (_, i) =>
@@ -370,15 +386,17 @@ export class SomaClient {
           ),
         )
         const myMentoring = [firstPage, ...remainingPages].flatMap((p) => p.items)
-        dashboard.mentoringSessions = myMentoring.map((item) => ({
-          title: item.title,
-          url: `/mypage/mentoLec/view.do?qustnrSn=${item.id}`,
-          status: item.status,
-          date: item.sessionDate,
-          time: item.sessionTime.start,
-          timeEnd: item.sessionTime.end,
-          type: item.type,
-        }))
+        dashboard.mentoringSessions = sortDashboardMentoringItems(
+          myMentoring.map((item) => ({
+            title: item.title,
+            url: `/mypage/mentoLec/view.do?qustnrSn=${item.id}`,
+            status: item.status,
+            date: item.sessionDate,
+            time: item.sessionTime.start,
+            timeEnd: item.sessionTime.end,
+            type: item.type,
+          })),
+        )
         return dashboard
       },
     }
@@ -719,6 +737,62 @@ export class SomaClient {
     }
     return null
   }
+}
+
+function isTraineeRole(role: string): boolean {
+  return role.includes('연수생')
+}
+
+function applicationHistoryToDashboardItem(
+  item: ApplicationHistoryItem,
+): Dashboard['mentoringSessions'][number] | null {
+  if (item.applicationStatus.includes('취소')) return null
+
+  const type = applicationCategoryToMentoringType(item.category)
+  if (!type) return null
+
+  const { date, time, timeEnd } = parseApplicationSessionDate(item.sessionDate)
+  if (date && date < new Date().toISOString().slice(0, 10)) return null
+
+  return {
+    title: item.title,
+    url: item.url ?? '/mentoring/history',
+    status: item.applicationStatus,
+    ...(date ? { date } : {}),
+    ...(time ? { time } : {}),
+    ...(timeEnd ? { timeEnd } : {}),
+    type,
+  }
+}
+
+function sortDashboardMentoringItems(items: Dashboard['mentoringSessions']): Dashboard['mentoringSessions'] {
+  return [...items].sort((a, b) => dashboardMentoringSortKey(a).localeCompare(dashboardMentoringSortKey(b)))
+}
+
+function dashboardMentoringSortKey(item: Dashboard['mentoringSessions'][number]): string {
+  return `${item.date || '9999-12-31'} ${item.time || '99:99'}`
+}
+
+function applicationCategoryToMentoringType(category: string): '자유 멘토링' | '멘토 특강' | null {
+  const compact = category.replace(/\s+/g, '')
+  if (compact.includes('특강')) return '멘토 특강'
+  if (compact.includes('멘토링')) return '자유 멘토링'
+  return null
+}
+
+function parseApplicationSessionDate(value: string): { date?: string; time?: string; timeEnd?: string } {
+  const date = value.match(/\d{4}-\d{2}-\d{2}/)?.[0]
+  const times = value.match(/\d{1,2}:\d{2}(?::\d{2})?/g)?.map(normalizeDashboardTime) ?? []
+  return {
+    ...(date ? { date } : {}),
+    ...(times[0] ? { time: times[0] } : {}),
+    ...(times[1] ? { timeEnd: times[1] } : {}),
+  }
+}
+
+function normalizeDashboardTime(value: string): string {
+  const [hours = '', minutes = ''] = value.split(':')
+  return `${hours.padStart(2, '0')}:${minutes}`
 }
 
 function isSuccessAlertMessage(message: string): boolean {

@@ -642,6 +642,7 @@ describe('SomaClient', () => {
       id: 1,
       category: '멘토 특강',
       title: '접수내역',
+      url: '/sw/mypage/mentoLec/view.do?qustnrSn=1',
       author: '전수열',
       sessionDate: '2026-04-11',
       appliedAt: '2026-04-01',
@@ -664,6 +665,66 @@ describe('SomaClient', () => {
       searchId: 'neo@example.com',
       searchWrd: '전수열',
     })
+  })
+
+  it('fills trainee dashboard mentoring sessions from all upcoming application history pages', async () => {
+    const today = new Date().toISOString().slice(0, 10)
+    const todayDotted = today.replaceAll('-', '.')
+    const { http, calls } = createFakeHttp({
+      identity: { userId: 'trainee@example.com', userNm: '김연수' },
+      getBody: (path, data) => {
+        if (path === '/mypage/myMain/dashboard.do') {
+          return '<ul class="dash-top"><li class="dash-card"><div class="dash-etc"><span>소속 :<br> OpenSoma</span><span>직책 :<br> </span></div><div class="dash-state"><div class="top"><span class="bg-blue label"><span>17기 연수생</span></span><div class="welcome"><strong>김연수</strong>님 안녕하세요.</div></div></div></li></ul><ul class="bbs-dash_w"><li>멘토링 · 멘토특강<li><a href="/sw/mypage/mentoLec/view.do?qustnrSn=999">네이티브 항목 접수중</a></li></li></ul>'
+        }
+        if (path === '/mypage/userAnswer/history.do') {
+          const page = Number(data?.pageIndex ?? '1')
+          if (page === 1) {
+            return `<table><tbody>
+              <tr><td>45</td><td>멘토특강</td><td><a href="/sw/mypage/mentoLec/view.do?qustnrSn=39">미래 특강</a></td><td>김멘토</td><td>2099.01.01(목) 10:00:00 ~ 12:00:00</td><td>2026-04-20 22:41</td><td>[접수완료]</td><td>[OK]</td><td>-</td><td>-</td></tr>
+              <tr><td>44</td><td>멘토특강</td><td><a href="/sw/mypage/mentoLec/view.do?qustnrSn=40">이미 지난 특강</a></td><td>장영원</td><td>2000.01.01(토) 20:00:00 ~ 22:30:00</td><td>2026-04-24 22:41</td><td>[접수완료]</td><td>[OK]</td><td>-</td><td>-</td></tr>
+              <tr><td>43</td><td>자유멘토링</td><td><a href="/sw/mypage/mentoLec/view.do?qustnrSn=41">취소한 멘토링</a></td><td>이현수</td><td>2099.01.01(목) 20:00:00 ~ 21:30:00</td><td>2026-04-26 03:18</td><td>[접수취소]</td><td>[OK]</td><td>-</td><td>-</td></tr>
+            </tbody></table><ul class="bbs-total"><li>Total : 5</li><li>1/2 Page</li></ul>`
+          }
+
+          return `<table><tbody>
+            <tr><td>42</td><td>자유멘토링</td><td><a href="/sw/mypage/mentoLec/view.do?qustnrSn=44">팀 프로젝트 방향성 피드백</a></td><td>이상철</td><td>${todayDotted}(화) 22:00:00 ~ 24:00:00</td><td>2026-04-27 22:41</td><td>[접수완료]</td><td>[OK]</td><td>-</td><td>-</td></tr>
+            <tr><td>41</td><td>행사</td><td><a href="/sw/mypage/applicants/view.do?bbsId=38">멘토링이 아닌 행사</a></td><td>관리자</td><td>2099.01.02(금) 10:00:00 ~ 12:00:00</td><td>2026-04-20 22:41</td><td>[접수완료]</td><td>[OK]</td><td>-</td><td>-</td></tr>
+          </tbody></table><ul class="bbs-total"><li>Total : 5</li><li>2/2 Page</li></ul>`
+        }
+        return ''
+      },
+    })
+    const client = new SomaClient({ http })
+
+    const dashboard = await client.dashboard.get()
+
+    expect(dashboard.role).toBe('17기 연수생')
+    expect(dashboard.mentoringSessions).toEqual([
+      {
+        title: '팀 프로젝트 방향성 피드백',
+        url: '/sw/mypage/mentoLec/view.do?qustnrSn=44',
+        status: '접수완료',
+        date: today,
+        time: '22:00',
+        timeEnd: '24:00',
+        type: '자유 멘토링',
+      },
+      {
+        title: '미래 특강',
+        url: '/sw/mypage/mentoLec/view.do?qustnrSn=39',
+        status: '접수완료',
+        date: '2099-01-01',
+        time: '10:00',
+        timeEnd: '12:00',
+        type: '멘토 특강',
+      },
+    ])
+    const historyPages = calls
+      .filter((c) => c.path === '/mypage/userAnswer/history.do')
+      .map((c) => c.data?.pageIndex ?? '1')
+      .sort()
+    expect(historyPages).toEqual(['1', '2'])
+    expect(calls.some((c) => c.path === '/mypage/mentoLec/list.do')).toBe(false)
   })
 
   it('routes schedule calls to the expected endpoint', async () => {
@@ -806,9 +867,9 @@ describe('SomaClient', () => {
         }
         if (path === '/mypage/mentoLec/list.do') {
           const page = Number(data?.pageIndex ?? '1')
-          if (page === 1) return buildPaginatedListBody(buildMentoringRow(101, '2026-04-03'), 1, 3, 3)
-          if (page === 2) return buildPaginatedListBody(buildMentoringRow(102, '2026-04-10'), 2, 3, 3)
-          if (page === 3) return buildPaginatedListBody(buildMentoringRow(103, '2026-04-17'), 3, 3, 3)
+          if (page === 1) return buildPaginatedListBody(buildMentoringRow(103, '2026-04-17'), 1, 3, 3)
+          if (page === 2) return buildPaginatedListBody(buildMentoringRow(101, '2026-04-03'), 2, 3, 3)
+          if (page === 3) return buildPaginatedListBody(buildMentoringRow(102, '2026-04-10'), 3, 3, 3)
         }
         return ''
       },

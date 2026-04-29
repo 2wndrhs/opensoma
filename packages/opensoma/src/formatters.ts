@@ -429,11 +429,14 @@ export function parseScheduleList(html: string): { items: ScheduleListItem[]; pa
 }
 
 export function parseApplicationHistory(html: string): ApplicationHistoryItem[] {
-  return findTableRows(html, 10).map((cells) =>
-    ApplicationHistoryItemSchema.parse({
+  return findTableRows(html, 10).map((cells) => {
+    const link = cells[2]?.querySelector('a')
+    const url = link?.getAttribute('href')
+    return ApplicationHistoryItemSchema.parse({
       id: extractNumber(cleanText(cells[0])),
       category: cleanText(cells[1]),
-      title: cleanText(cells[2]?.querySelector('a') ?? cells[2]),
+      title: cleanText(link ?? cells[2]),
+      ...(url ? { url } : {}),
       author: cleanText(cells[3]),
       sessionDate: normalizeDate(cleanText(cells[4])),
       appliedAt: cleanText(cells[5]),
@@ -441,8 +444,8 @@ export function parseApplicationHistory(html: string): ApplicationHistoryItem[] 
       approvalStatus: stripWrappingBrackets(cleanText(cells[7])),
       applicationDetail: cleanText(cells[8]),
       note: cleanText(cells[9]),
-    }),
-  )
+    })
+  })
 }
 
 export function parsePagination(html: string): Pagination {
