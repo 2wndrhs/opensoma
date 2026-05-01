@@ -420,7 +420,7 @@ export function parseScheduleList(html: string): { items: ScheduleListItem[]; pa
 
   // SWMaestro's monthly schedule page does not render the bbs-total pagination block,
   // so synthesize a single-page response when items exist but parsePagination found none.
-  const parsedPagination = parsePagination(html)
+  const parsedPagination = parsePagination(html, { itemCount: items.length })
   const pagination =
     parsedPagination.total === 0 && items.length > 0
       ? PaginationSchema.parse({ total: items.length, currentPage: 1, totalPages: 1 })
@@ -449,17 +449,40 @@ export function parseApplicationHistory(html: string): ApplicationHistoryItem[] 
   })
 }
 
-export function parsePagination(html: string): Pagination {
+export function parsePagination(html: string, options?: { itemCount?: number }): Pagination {
   const root = parse(html)
   const items = root.querySelectorAll('ul.bbs-total > li').map((item) => cleanText(item))
   const total = extractNumber(items.find((item) => item.includes('Total')) ?? '')
   const pageMatch = items.find((item) => item.includes('Page'))?.match(/(\d+)\s*\/\s*(\d+)\s*Page/i)
+  const currentPage = pageMatch ? Number.parseInt(pageMatch[1], 10) : 1
+  const parsedTotalPages = pageMatch ? Number.parseInt(pageMatch[2], 10) : 1
 
   return PaginationSchema.parse({
     total,
-    currentPage: pageMatch ? Number.parseInt(pageMatch[1], 10) : 1,
-    totalPages: pageMatch ? Number.parseInt(pageMatch[2], 10) : 1,
+    currentPage,
+    totalPages: deriveTotalPages({ total, currentPage, parsedTotalPages, itemCount: options?.itemCount }),
   })
+}
+
+function deriveTotalPages({
+  total,
+  currentPage,
+  parsedTotalPages,
+  itemCount,
+}: {
+  total: number
+  currentPage: number
+  parsedTotalPages: number
+  itemCount: number | undefined
+}): number {
+  if (total <= 0) return 1
+  const fallback = Math.max(1, parsedTotalPages, currentPage)
+  if (itemCount === undefined) return fallback
+  // SWMaestro's `1/50 Page` text is unreliable on some lists (e.g. report) — the server emits a
+  // hardcoded cap regardless of actual data. When the visible items already cover the total,
+  // there is only one page; correct the bogus value rather than echo it.
+  if (currentPage === 1 && total <= itemCount) return 1
+  return fallback
 }
 
 export function parseCsrfToken(html: string): string {

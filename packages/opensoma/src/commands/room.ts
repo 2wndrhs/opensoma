@@ -103,9 +103,10 @@ async function reservationsAction(options: ReservationsOptions): Promise<void> {
     if (status === 'cancelled') params.searchStat = 'RS002'
 
     const html = await http.get('/mypage/itemRent/list.do', params)
+    const items = formatters.parseRoomReservationList(html)
     const result = {
-      items: formatters.parseRoomReservationList(html),
-      pagination: formatters.parsePagination(html),
+      items,
+      pagination: formatters.parsePagination(html, { itemCount: items.length }),
     }
     console.log(formatOutput(result, options.pretty))
   } catch (error) {

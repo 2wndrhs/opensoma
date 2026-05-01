@@ -193,9 +193,10 @@ export class SomaClient {
             user,
           }),
         )
+        const items = formatters.parseMentoringList(html)
         return {
-          items: formatters.parseMentoringList(html),
-          pagination: formatters.parsePagination(html),
+          items,
+          pagination: formatters.parsePagination(html, { itemCount: items.length }),
         }
       },
       get: async (id) => {
@@ -262,9 +263,10 @@ export class SomaClient {
           menuNo: MENU_NO.APPLICATION_HISTORY,
           ...(options?.page ? { pageIndex: String(options.page) } : {}),
         })
+        const items = formatters.parseApplicationHistory(html)
         return {
-          items: formatters.parseApplicationHistory(html),
-          pagination: formatters.parsePagination(html),
+          items,
+          pagination: formatters.parsePagination(html, { itemCount: items.length }),
         }
       },
     }
@@ -348,9 +350,10 @@ export class SomaClient {
           params.searchStat = status === 'cancelled' ? 'RS002' : 'RS001'
         }
         const html = await this.http.get('/mypage/itemRent/list.do', params)
+        const items = formatters.parseRoomReservationList(html)
         return {
-          items: formatters.parseRoomReservationList(html),
-          pagination: formatters.parsePagination(html),
+          items,
+          pagination: formatters.parsePagination(html, { itemCount: items.length }),
         }
       },
     }
@@ -418,9 +421,10 @@ export class SomaClient {
           menuNo: MENU_NO.NOTICE,
           ...(options?.page ? { pageIndex: String(options.page) } : {}),
         })
+        const items = formatters.parseNoticeList(html)
         return {
-          items: formatters.parseNoticeList(html),
-          pagination: formatters.parsePagination(html),
+          items,
+          pagination: formatters.parsePagination(html, { itemCount: items.length }),
         }
       },
       get: async (id) => {
@@ -445,9 +449,10 @@ export class SomaClient {
         if (options?.searchField !== undefined) params.searchCnd = options.searchField
         if (options?.searchKeyword) params.searchWrd = options.searchKeyword
         const html = await this.http.get('/mypage/mentoringReport/list.do', params)
+        const items = formatters.parseReportList(html)
         return {
-          items: formatters.parseReportList(html),
-          pagination: formatters.parsePagination(html),
+          items,
+          pagination: formatters.parsePagination(html, { itemCount: items.length }),
         }
       },
       get: async (id) => {
@@ -539,9 +544,10 @@ export class SomaClient {
         if (options?.month) params.searchMonth = options.month
         if (options?.reportType !== undefined) params.searchReport = options.reportType
         const html = await this.http.get('/mypage/mentoringReport/resultList.do', params)
+        const items = formatters.parseApprovalList(html)
         return {
-          items: formatters.parseApprovalList(html),
-          pagination: formatters.parsePagination(html),
+          items,
+          pagination: formatters.parsePagination(html, { itemCount: items.length }),
         }
       },
     }
@@ -578,9 +584,10 @@ export class SomaClient {
           menuNo: MENU_NO.EVENT,
           ...(options?.page ? { pageIndex: String(options.page) } : {}),
         })
+        const items = formatters.parseEventList(html)
         return {
-          items: formatters.parseEventList(html),
-          pagination: formatters.parsePagination(html),
+          items,
+          pagination: formatters.parsePagination(html, { itemCount: items.length }),
         }
       },
       get: async (id) => {

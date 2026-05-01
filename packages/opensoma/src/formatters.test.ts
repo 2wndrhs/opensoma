@@ -768,6 +768,29 @@ describe('formatters', () => {
     expect(parsePagination(html)).toEqual({ total: 11, currentPage: 1, totalPages: 2 })
   })
 
+  describe('parsePagination with itemCount', () => {
+    it('overrides bogus totalPages when all items fit on the first page', () => {
+      // SWMaestro returns "1/50 Page" even for 7 items on report/mentoring lists.
+      const html = `<ul class="bbs-total"><li>Total : 7</li><li>1/50 Page</li></ul>`
+      expect(parsePagination(html, { itemCount: 7 })).toEqual({ total: 7, currentPage: 1, totalPages: 1 })
+    })
+
+    it('honors parsed totalPages when there are genuinely more pages', () => {
+      const html = `<ul class="bbs-total"><li>Total : 12</li><li>1/2 Page</li></ul>`
+      expect(parsePagination(html, { itemCount: 10 })).toEqual({ total: 12, currentPage: 1, totalPages: 2 })
+    })
+
+    it('returns single page when total is zero', () => {
+      const html = `<ul class="bbs-total"><li>Total : 0</li><li>1/1 Page</li></ul>`
+      expect(parsePagination(html, { itemCount: 0 })).toEqual({ total: 0, currentPage: 1, totalPages: 1 })
+    })
+
+    it('falls back to parsed totalPages when itemCount is omitted', () => {
+      const html = `<ul class="bbs-total"><li>Total : 7</li><li>1/50 Page</li></ul>`
+      expect(parsePagination(html)).toEqual({ total: 7, currentPage: 1, totalPages: 50 })
+    })
+  })
+
   it('extracts the CSRF token from a hidden input field', () => {
     expect(parseCsrfToken('<form><input type="hidden" name="csrfToken" value="csrf-123"></form>')).toBe('csrf-123')
   })
