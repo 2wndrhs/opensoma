@@ -21,10 +21,8 @@ const FIELD_OPTIONS = [
 type FieldKey = (typeof FIELD_OPTIONS)[number]['value']
 type MineSearch = 'mentor:@me' | 'member:@me'
 
-const MINE_SEARCHES = new Set<string>(['mentor:@me', 'member:@me'])
-
 function splitSearch(raw: string | null | undefined): { field: FieldKey; value: string } {
-  if (!raw || MINE_SEARCHES.has(raw)) return { field: 'all', value: '' }
+  if (!raw) return { field: 'all', value: '' }
   const colon = raw.indexOf(':')
   if (colon === -1) return { field: 'all', value: raw }
   const candidate = raw.slice(0, colon) as FieldKey
