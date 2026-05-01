@@ -79,9 +79,10 @@ async function listAction(options: ListOptions): Promise<void> {
       ...(options.search ? { searchWrd: options.search } : {}),
     })
 
+    const items = formatters.parseReportList(html)
     console.log(
       formatOutput(
-        { items: formatters.parseReportList(html), pagination: formatters.parsePagination(html) },
+        { items, pagination: formatters.parsePagination(html, { itemCount: items.length }) },
         options.pretty,
       ),
     )
@@ -114,9 +115,10 @@ async function approvalAction(options: ApprovalOptions): Promise<void> {
       ...(options.type ? { searchReport: options.type } : {}),
     })
 
+    const items = formatters.parseApprovalList(html)
     console.log(
       formatOutput(
-        { items: formatters.parseApprovalList(html), pagination: formatters.parsePagination(html) },
+        { items, pagination: formatters.parsePagination(html, { itemCount: items.length }) },
         options.pretty,
       ),
     )

@@ -73,11 +73,12 @@ async function listAction(options: ListOptions): Promise<void> {
         user,
       }),
     )
+    const items = formatters.parseMentoringList(html)
     console.log(
       formatOutput(
         {
-          items: formatters.parseMentoringList(html),
-          pagination: formatters.parsePagination(html),
+          items,
+          pagination: formatters.parsePagination(html, { itemCount: items.length }),
         },
         options.pretty,
       ),
@@ -215,11 +216,12 @@ async function historyAction(options: HistoryOptions): Promise<void> {
       menuNo: MENU_NO.APPLICATION_HISTORY,
       ...(options.page ? { pageIndex: options.page } : {}),
     })
+    const items = formatters.parseApplicationHistory(html)
     console.log(
       formatOutput(
         {
-          items: formatters.parseApplicationHistory(html),
-          pagination: formatters.parsePagination(html),
+          items,
+          pagination: formatters.parsePagination(html, { itemCount: items.length }),
         },
         options.pretty,
       ),

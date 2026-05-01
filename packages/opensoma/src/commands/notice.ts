@@ -16,9 +16,10 @@ async function listAction(options: ListOptions): Promise<void> {
       menuNo: MENU_NO.NOTICE,
       ...(options.page ? { pageIndex: options.page } : {}),
     })
+    const items = formatters.parseNoticeList(html)
     console.log(
       formatOutput(
-        { items: formatters.parseNoticeList(html), pagination: formatters.parsePagination(html) },
+        { items, pagination: formatters.parsePagination(html, { itemCount: items.length }) },
         options.pretty,
       ),
     )
