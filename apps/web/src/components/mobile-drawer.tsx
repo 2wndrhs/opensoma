@@ -7,18 +7,20 @@ import { useEffect, useRef } from 'react'
 import { logout } from '@/app/logout/actions'
 import { useShell } from '@/components/shell-context'
 import { cn } from '@/lib/cn'
-import { navItems } from '@/lib/nav-items'
+import { createNavItems } from '@/lib/nav-items'
 import Link from '@/ui/link'
 import { Separator } from '@/ui/separator'
 
 interface MobileDrawerProps {
+  isTrainee: boolean
   username?: string
 }
 
-export function MobileDrawer({ username }: MobileDrawerProps) {
+export function MobileDrawer({ isTrainee, username }: MobileDrawerProps) {
   const pathname = usePathname()
   const firstNavItemRef = useRef<HTMLAnchorElement | null>(null)
   const { isMobileDrawerOpen, setIsMobileDrawerOpen } = useShell()
+  const navItems = createNavItems({ isTrainee })
 
   useEffect(() => {
     if (!isMobileDrawerOpen) {
